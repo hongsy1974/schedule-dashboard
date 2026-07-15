@@ -491,7 +491,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div>
           <label style="${lblStyle}">목표 수치</label>
-          <input id="gf-target" type="number" data-action="gfTarget" value="${f.targetValue}" style="${inpStyle}">
+          <input id="gf-target" type="text" inputmode="decimal" data-action="gfTarget" value="${f.targetValue}" style="${inpStyle}">
         </div>
         <div>
           <label style="${lblStyle}">단위</label>
@@ -500,7 +500,7 @@
       </div>
       <div>
         <label style="${lblStyle}">현재 값</label>
-        <input id="gf-current" type="number" data-action="gfCurrent" value="${f.currentValue}" style="${inpStyle}">
+        <input id="gf-current" type="text" inputmode="decimal" data-action="gfCurrent" value="${f.currentValue}" style="${inpStyle}">
       </div>
       <div style="background:#FFF7F1;border:1px solid #FADFC9;border-radius:7px;padding:11px 14px;display:flex;align-items:center;gap:10px">
         <span style="font-size:12.5px;color:#7a4a24;font-weight:700">예상 달성률</span>
@@ -520,7 +520,7 @@
           </div>
           <div>
             <label style="${lblStyle}">연도</label>
-            <input id="gf-year" type="number" data-action="gfYear" value="${f.year}" style="${inpStyle}">
+            <input id="gf-year" type="text" inputmode="numeric" data-action="gfYear" value="${f.year}" style="${inpStyle}">
           </div>
           <div>
             <label style="${lblStyle}">달성 방식</label>
