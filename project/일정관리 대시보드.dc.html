@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#ECEDEF;font-family:'Noto Sans KR',system-ui,sans-serif;color:#333;-webkit-font-smoothing:antialiased}
+  a{color:#F37321;text-decoration:none}
+  a:hover{color:#d85f12}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#cfd2d6;border-radius:6px;border:2px solid #ECEDEF}
+  ::-webkit-scrollbar-thumb:hover{background:#b8bcc2}
+  input,select,textarea,button{font-family:inherit}
+  @keyframes ovIn{from{opacity:0}to{opacity:1}}
+  @keyframes mdIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</helmet>
+
+<div style="min-width:1440px;max-width:1920px;margin:0 auto;background:#ECEDEF;min-height:100vh">
+
+  <div style="background:#fff;border-bottom:1px solid #E3E5E8">
+    <div style="height:56px;display:flex;align-items:center;padding:0 28px;gap:34px">
+      <div style="display:flex;align-items:center;gap:11px">
+        <div style="width:30px;height:30px;background:#F37321;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:17px">W</div>
+        <span style="font-weight:900;font-size:17px;letter-spacing:-.3px">WorkFlow<span style="color:#F37321"> Portal</span></span>
+      </div>
+      <nav style="display:flex;align-items:center;gap:2px;height:100%">
+        <sc-for list="{{ navItems }}" as="nav" hint-placeholder-count="5">
+          <button onClick="{{ nav.go }}" style="{{ nav.style }}">{{ nav.label }}</button>
+        </sc-for>
+      </nav>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+        <div style="text-align:right;line-height:1.25">
+          <div style="font-size:12px;color:#888">{{ todayLabel }}</div>
+          <div style="font-size:12px;font-weight:700">담당자 · 김실무</div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:50%;background:#F5F6F7;border:1px solid #E3E5E8;display:flex;align-items:center;justify-content:center;font-weight:700;color:#888;font-size:13px">김</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert bar -->
+  <sc-if value="{{ hasAlerts }}" hint-placeholder-val="{{ true }}">
+    <div style="background:#FFF4EC;border-bottom:1px solid #FADFC9;padding:9px 28px;display:flex;align-items:center;gap:12px;font-size:13px">
+      <span style="background:#F37321;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px">알림</span>
+      <div style="display:flex;gap:22px;flex-wrap:wrap;color:#7a4a24">
+        <sc-for list="{{ alerts }}" as="al" hint-placeholder-count="2">
+          <span>· {{ al }}</span>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="padding:20px 28px 48px">
+
+    <!-- ============ HOME ============ -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">대시보드</h1>
+          <div style="font-size:12.5px;color:#888;margin-top:3px">반복 일정 · 지속 업무 · 연간 목표를 한 화면에서</div>
+        </div>
+        <button onClick="{{ openNew }}" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 업무 등록</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start">
+
+        <!-- LEFT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- Weekly -->
+          <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
+              <div style="display:flex;align-items:baseline;gap:10px">
+                <span style="font-size:15.5px;font-weight:700">주간 일정</span>
+                <span style="font-size:12px;color:#888">{{ weekRangeLabel }}</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button onClick="{{ prevWeek }}" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">‹</button>
+                <button onClick="{{ thisWeek }}" style="height:26px;padding:0 10px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#555;font-size:11.5px">오늘</button>
+                <button onClick="{{ nextWeek }}" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">›</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr)">
+              <sc-for list="{{ weekDays }}" as="d" hint-placeholder-count="7">
+                <div style="{{ d.colStyle }}">
+                  <div style="{{ d.headStyle }}">
+                    <span style="{{ d.dowStyle }}">{{ d.dow }}</span>
+                    <span style="{{ d.dateStyle }}">{{ d.date }}</span>
+                  </div>
+                  <div style="padding:7px 6px;display:flex;flex-direction:column;gap:4px;min-height:96px">
+                    <sc-for list="{{ d.items }}" as="ev" hint-placeholder-count="0">
+                      <div title="{{ ev.name }}" style="{{ ev.style }}">{{ ev.name }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Monthly -->
+          <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
+              <div style="display:flex;align-items:baseline;gap:10px">
+                <span style="font-size:15.5px;font-weight:700">월간 일정</span>
+                <span style="font-size:12px;color:#888">{{ monthLabel }}</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button onClick="{{ prevMonth }}" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">‹</button>
+                <button onClick="{{ thisMonth }}" style="height:26px;padding:0 10px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#555;font-size:11.5px">이번 달</button>
+                <button onClick="{{ nextMonth }}" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">›</button>
+              </div>
+            </div>
+            <div style="padding:12px 14px 16px">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px">
+                <sc-for list="{{ dowHeaders }}" as="h" hint-placeholder-count="7">
+                  <div style="{{ h.style }}">{{ h.label }}</div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">
+                <sc-for list="{{ monthCells }}" as="c" hint-placeholder-count="35">
+                  <div style="{{ c.cellStyle }}">
+                    <span style="{{ c.numStyle }}">{{ c.day }}</span>
+                    <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px">
+                      <sc-for list="{{ c.items }}" as="ev" hint-placeholder-count="0">
+                        <div title="{{ ev.name }}" style="{{ ev.style }}">{{ ev.name }}</div>
+                      </sc-for>
+                      <sc-if value="{{ c.moreShow }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:10px;color:#aaa;padding-left:2px">+{{ c.more }}</div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+
+          <!-- Top 5 -->
+          <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
+              <span style="font-size:15.5px;font-weight:700">우선순위 Top 5</span>
+              <span style="font-size:11.5px;color:#aaa">중요도×2 + 긴급도 + 마감가중</span>
+            </div>
+            <div>
+              <sc-for list="{{ top5 }}" as="t" hint-placeholder-count="5">
+                <div onClick="{{ t.open }}" style="{{ t.rowStyle }}">
+                  <div style="{{ t.rankStyle }}">{{ t.rank }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</div>
+                    <div style="display:flex;align-items:center;gap:7px;margin-top:3px">
+                      <span style="{{ t.typeBadge }}">{{ t.typeLabel }}</span>
+                      <span style="font-size:11.5px;color:#888">중요 {{ t.impLabel }} · 긴급 {{ t.urgLabel }}</span>
+                      <span style="{{ t.ddayStyle }}">{{ t.ddayLabel }}</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:19px;font-weight:900;color:#F37321;line-height:1">{{ t.score }}</div>
+                    <div style="font-size:10px;color:#aaa;margin-top:2px">점</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Goals -->
+          <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
+              <span style="font-size:15.5px;font-weight:700">목표 달성 현황</span>
+              <button onClick="{{ goGoals }}" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#EEF0F2">
+              <sc-for list="{{ goalGauges }}" as="g" hint-placeholder-count="4">
+                <div style="background:#fff;padding:16px 14px;display:flex;flex-direction:column;align-items:center">
+                  <div style="position:relative;width:104px;height:104px">
+                    <svg width="104" height="104" viewBox="0 0 104 104" style="transform:rotate(-90deg)">
+                      <circle cx="52" cy="52" r="44" fill="none" stroke="#EEF0F2" stroke-width="11"></circle>
+                      <circle cx="52" cy="52" r="44" fill="none" stroke="{{ g.color }}" stroke-width="11" stroke-linecap="round" stroke-dasharray="{{ g.dash }}"></circle>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                      <span style="font-size:22px;font-weight:900;color:#F37321;line-height:1">{{ g.pct }}</span>
+                      <span style="font-size:10px;color:#aaa">%</span>
+                    </div>
+                  </div>
+                  <div style="font-size:12.5px;font-weight:700;margin-top:9px;text-align:center;line-height:1.3">{{ g.name }}</div>
+                  <div style="{{ g.tagStyle }}">{{ g.tag }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- Ongoing -->
+          <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
+              <div style="display:flex;align-items:baseline;gap:9px">
+                <span style="font-size:15.5px;font-weight:700">지속 업무 진행률</span>
+                <span style="font-size:12px;color:#888">진행 중 {{ ongoingCount }}건</span>
+              </div>
+              <button onClick="{{ goTasks }}" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
+            </div>
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:9px;max-height:290px;overflow:auto">
+              <sc-for list="{{ ongoingCards }}" as="t" hint-placeholder-count="4">
+                <div onClick="{{ t.open }}" style="border:1px solid #EEF0F2;border-radius:7px;padding:11px 13px;cursor:pointer">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span style="{{ t.prioBadge }}">{{ t.prioLabel }}</span>
+                    <span style="font-size:13.5px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</span>
+                    <sc-if value="{{ t.stalled }}" hint-placeholder-val="{{ false }}">
+                      <span style="background:#FBECEC;color:#E53935;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px">정체</span>
+                    </sc-if>
+                    <span style="{{ t.ddayStyle }}">{{ t.ddayLabel }}</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+                    <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
+                      <div style="height:100%;border-radius:4px;background:{{ t.barColor }};width: {{ t.progress }}%"></div>
+                    </div>
+                    <span style="font-size:12.5px;font-weight:900;color:#333;width:34px;text-align:right">{{ t.progress }}%</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ============ TASKS ============ -->
+    <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">업무 목록 / 관리</h1>
+          <div style="font-size:12.5px;color:#888;margin-top:3px">전체 {{ allCount }}건 · 표시 {{ viewCount }}건</div>
+        </div>
+        <button onClick="{{ openNew }}" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 업무 등록</button>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 18px;border-bottom:1px solid #EEF0F2;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="font-size:12px;color:#888;font-weight:700">유형</span>
+            <sc-for list="{{ typeFilters }}" as="f" hint-placeholder-count="4">
+              <button onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="font-size:12px;color:#888;font-weight:700">상태</span>
+            <sc-for list="{{ statusFilters }}" as="f" hint-placeholder-count="5">
+              <button onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:7px">
+            <span style="font-size:12px;color:#888;font-weight:700">정렬</span>
+            <select onChange="{{ setSort }}" value="{{ sortBy }}" style="height:30px;border:1px solid #E3E5E8;border-radius:6px;padding:0 8px;font-size:12.5px;color:#555;background:#fff">
+              <option value="score">우선순위 높은순</option>
+              <option value="due">마감 임박순</option>
+              <option value="progress">진행률 낮은순</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2.4fr .9fr .9fr .9fr .7fr .7fr .7fr 1.6fr 1.3fr;background:#F5F6F7;border-bottom:1px solid #E3E5E8;font-size:11.5px;font-weight:700;color:#888">
+          <div style="padding:10px 14px">업무명</div>
+          <div style="padding:10px 8px">유형</div>
+          <div style="padding:10px 8px">시작일</div>
+          <div style="padding:10px 8px">마감일</div>
+          <div style="padding:10px 8px;text-align:center">중요</div>
+          <div style="padding:10px 8px;text-align:center">긴급</div>
+          <div style="padding:10px 8px;text-align:center">점수</div>
+          <div style="padding:10px 8px">진행률</div>
+          <div style="padding:10px 8px">상태</div>
+        </div>
+        <div style="max-height:560px;overflow:auto">
+          <sc-for list="{{ tableGroups }}" as="grp" hint-placeholder-count="4">
+          <div>
+            <div style="{{ grp.headStyle }}">
+              <span style="{{ grp.dotStyle }}"></span>
+              <span style="font-size:12.5px;font-weight:700;color:#444">{{ grp.name }}</span>
+              <span style="font-size:11px;color:#888">{{ grp.count }}건</span>
+              <sc-if value="{{ grp.isGoal }}" hint-placeholder-val="{{ false }}">
+                <span style="margin-left:auto;font-size:11px;color:#888">평균 진행률 <b style="color:#F37321">{{ grp.avg }}%</b></span>
+              </sc-if>
+            </div>
+          <sc-for list="{{ grp.rows }}" as="t" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:2.4fr .9fr .9fr .9fr .7fr .7fr .7fr 1.6fr 1.3fr;border-bottom:1px solid #F2F3F5;align-items:center;font-size:12.5px">
+              <div style="padding:11px 14px;display:flex;align-items:center;gap:8px;min-width:0">
+                <span onClick="{{ t.open }}" style="font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</span>
+                <sc-if value="{{ t.stalled }}" hint-placeholder-val="{{ false }}">
+                  <span style="background:#FBECEC;color:#E53935;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;flex:none">정체</span>
+                </sc-if>
+              </div>
+              <div style="padding:11px 8px"><span style="{{ t.typeBadge }}">{{ t.typeLabel }}</span></div>
+              <div style="padding:11px 8px;color:#888">{{ t.startLabel }}</div>
+              <div style="padding:11px 8px;color:#666">{{ t.dueLabel }}</div>
+              <div style="padding:11px 8px;text-align:center;color:#666">{{ t.impLabel }}</div>
+              <div style="padding:11px 8px;text-align:center;color:#666">{{ t.urgLabel }}</div>
+              <div style="padding:11px 8px;text-align:center;font-weight:900;color:#F37321">{{ t.score }}</div>
+              <div style="padding:11px 8px;display:flex;align-items:center;gap:8px">
+                <input type="range" min="0" max="100" step="5" value="{{ t.progress }}" onChange="{{ t.setProgress }}" style="flex:1;accent-color:#F37321;cursor:pointer">
+                <span style="font-size:11.5px;font-weight:700;width:32px;text-align:right">{{ t.progress }}%</span>
+              </div>
+              <div style="padding:11px 8px">
+                <select value="{{ t.rawStatus }}" onChange="{{ t.setStatus }}" style="{{ t.statusSelStyle }}">
+                  <option value="예정">예정</option>
+                  <option value="진행중">진행중</option>
+                  <option value="완료">완료</option>
+                </select>
+                <sc-if value="{{ t.overdue }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-block;margin-left:5px;background:#FBECEC;color:#E53935;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px">지연</span>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+          </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ============ MATRIX ============ -->
+    <sc-if value="{{ isMatrix }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-bottom:16px">
+        <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">아이젠하워 매트릭스</h1>
+        <div style="font-size:12.5px;color:#888;margin-top:3px">중요도 × 긴급도 4분면 · 완료 업무 제외</div>
+      </div>
+      <div style="display:grid;grid-template-columns:34px 1fr 1fr;grid-template-rows:34px 1fr 1fr;gap:10px;height:660px">
+        <div></div>
+        <div style="display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 높음 →</div>
+        <div style="display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 낮음</div>
+        <div style="display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#888">중요도 높음 ↑</div>
+        <sc-for list="{{ quadrants }}" as="q" hint-placeholder-count="4">
+          <div style="{{ q.boxStyle }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px"><span style="{{ q.dotStyle }}"></span><span style="font-size:14px;font-weight:900">{{ q.title }}</span></div>
+              <span style="font-size:11.5px;color:#888;font-weight:700">{{ q.action }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;overflow:auto;flex:1">
+              <sc-for list="{{ q.items }}" as="t" hint-placeholder-count="2">
+                <div onClick="{{ t.open }}" style="background:#fff;border:1px solid #EEF0F2;border-radius:6px;padding:8px 11px;cursor:pointer;display:flex;align-items:center;gap:8px">
+                  <span style="{{ t.typeBadge }}">{{ t.typeLabel }}</span>
+                  <span style="font-size:12.5px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</span>
+                  <span style="{{ t.ddayStyle }}">{{ t.ddayLabel }}</span>
+                  <span style="font-size:12px;font-weight:900;color:#F37321">{{ t.score }}점</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{ q.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:12px;color:#bbb;padding:8px 4px">해당 업무 없음</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <div></div>
+        <div style="display:flex;align-items:flex-start;justify-content:center;font-size:12.5px;font-weight:700;color:#bbb">중요도 낮음</div>
+        <div></div>
+      </div>
+    </sc-if>
+
+    <!-- ============ RECURRING ============ -->
+    <sc-if value="{{ isRecurring }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-bottom:16px">
+        <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">반복 일정 설정</h1>
+        <div style="font-size:12.5px;color:#888;margin-top:3px">주기가 도래하면 업무가 자동 생성되고 사전 알림일부터 대시보드에 노출됩니다</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:1.8fr 1fr 1.4fr .9fr 1.3fr .8fr;background:#F5F6F7;border-bottom:1px solid #E3E5E8;font-size:11.5px;font-weight:700;color:#888">
+          <div style="padding:11px 16px">규칙명</div>
+          <div style="padding:11px 8px">주기</div>
+          <div style="padding:11px 8px">생성 시점</div>
+          <div style="padding:11px 8px;text-align:center">사전 알림</div>
+          <div style="padding:11px 8px">다음 생성 예정일</div>
+          <div style="padding:11px 8px;text-align:center">활성</div>
+        </div>
+        <sc-for list="{{ ruleRows }}" as="r" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:1.8fr 1fr 1.4fr .9fr 1.3fr .8fr;border-bottom:1px solid #F2F3F5;align-items:center;font-size:13px">
+            <div style="padding:13px 16px;font-weight:500">{{ r.name }}</div>
+            <div style="padding:13px 8px"><span style="background:#F5F6F7;border:1px solid #E3E5E8;color:#666;font-size:11.5px;padding:2px 9px;border-radius:4px">{{ r.cycle }}</span></div>
+            <div style="padding:13px 8px;color:#666">{{ r.genPoint }}</div>
+            <div style="padding:13px 8px;text-align:center;color:#666">{{ r.alertDays }}일 전</div>
+            <div style="padding:13px 8px;font-weight:700;color:{{ r.nextColor }}">{{ r.nextGen }}</div>
+            <div style="padding:13px 8px;display:flex;justify-content:center">
+              <button onClick="{{ r.toggle }}" style="{{ r.toggleStyle }}"><span style="{{ r.knobStyle }}"></span></button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- ============ GOALS ============ -->
+    <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-bottom:16px">
+        <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">연간 목표 관리</h1>
+        <div style="font-size:12.5px;color:#888;margin-top:3px">{{ goalYear }}년 · 목표 달성률은 연결된 실행 계획 진행률의 평균으로 자동 집계</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <sc-for list="{{ goalDetails }}" as="g" hint-placeholder-count="4">
+          <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:18px;padding:16px 20px;border-bottom:1px solid #EEF0F2">
+              <div style="position:relative;width:66px;height:66px;flex:none">
+                <svg width="66" height="66" viewBox="0 0 66 66" style="transform:rotate(-90deg)">
+                  <circle cx="33" cy="33" r="27" fill="none" stroke="#EEF0F2" stroke-width="8"></circle>
+                  <circle cx="33" cy="33" r="27" fill="none" stroke="{{ g.color }}" stroke-width="8" stroke-linecap="round" stroke-dasharray="{{ g.dash }}"></circle>
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#F37321">{{ g.pct }}%</div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:16px;font-weight:900">{{ g.name }}</div>
+                <div style="font-size:12.5px;color:#888;margin-top:3px">실행 계획 {{ g.taskCount }}건 · 시간 경과율 {{ g.timePct }}%</div>
+              </div>
+              <div style="{{ g.tagStyle }}">{{ g.tag }}</div>
+            </div>
+            <div style="padding:6px 20px 14px">
+              <sc-for list="{{ g.tasks }}" as="t" hint-placeholder-count="3">
+                <div onClick="{{ t.open }}" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F5F6F7;cursor:pointer">
+                  <span style="{{ t.typeBadge }}">{{ t.typeLabel }}</span>
+                  <span style="font-size:13px;font-weight:500;flex:none;width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</span>
+                  <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
+                    <div style="height:100%;border-radius:4px;background:{{ t.barColor }};width: {{ t.progress }}%"></div>
+                  </div>
+                  <span style="font-size:12.5px;font-weight:900;width:38px;text-align:right">{{ t.progress }}%</span>
+                  <span style="{{ t.ddayStyle }}">{{ t.ddayLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- ============ MODAL ============ -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(30,32,36,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow:auto;animation:ovIn .12s ease">
+      <div style="width:640px;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mdIn .16s ease">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #EEF0F2">
+          <span style="font-size:16px;font-weight:900">{{ modalTitle }}</span>
+          <button onClick="{{ closeModal }}" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">×</button>
+        </div>
+        <div style="padding:22px 24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 18px">
+          <div style="grid-column:1/3">
+            <label style="{{ lblStyle }}">업무명</label>
+            <input value="{{ form.name }}" onInput="{{ fName }}" placeholder="업무명을 입력하세요" style="{{ inpStyle }}">
+          </div>
+          <div style="grid-column:1/3">
+            <label style="{{ lblStyle }}">설명</label>
+            <textarea value="{{ form.desc }}" onInput="{{ fDesc }}" rows="2" placeholder="업무 설명" style="{{ areaStyle }}"></textarea>
+          </div>
+          <div>
+            <label style="{{ lblStyle }}">유형</label>
+            <select value="{{ form.type }}" onChange="{{ fType }}" style="{{ selStyle }}">
+              <option value="recurring">반복 일정</option>
+              <option value="ongoing">지속 업무</option>
+              <option value="goal">목표 과제</option>
+            </select>
+          </div>
+          <div>
+            <label style="{{ lblStyle }}">연결 목표</label>
+            <select value="{{ form.goalId }}" onChange="{{ fGoal }}" style="{{ selStyle }}">
+              <option value="">— 없음 —</option>
+              <sc-for list="{{ goalOptions }}" as="o" hint-placeholder-count="4">
+                <option value="{{ o.id }}">{{ o.name }}</option>
+              </sc-for>
+            </select>
+          </div>
+          <div>
+            <label style="{{ lblStyle }}">시작일</label>
+            <input type="date" value="{{ form.start }}" onInput="{{ fStart }}" style="{{ inpStyle }}">
+          </div>
+          <div>
+            <label style="{{ lblStyle }}">마감일</label>
+            <input type="date" value="{{ form.due }}" onInput="{{ fDue }}" style="{{ inpStyle }}">
+          </div>
+          <div>
+            <label style="{{ lblStyle }}">중요도</label>
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ impBtns }}" as="b" hint-placeholder-count="3">
+                <button onClick="{{ b.set }}" style="{{ b.style }}">{{ b.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <label style="{{ lblStyle }}">긴급도</label>
+            <div style="display:flex;gap:6px">
+              <sc-for list="{{ urgBtns }}" as="b" hint-placeholder-count="3">
+                <button onClick="{{ b.set }}" style="{{ b.style }}">{{ b.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{ isRecurType }}" hint-placeholder-val="{{ false }}">
+            <div style="grid-column:1/3">
+              <label style="{{ lblStyle }}">반복 규칙</label>
+              <select value="{{ form.recur }}" onChange="{{ fRecur }}" style="{{ selStyle }}">
+                <option value="매년">매년</option>
+                <option value="매분기">매분기</option>
+                <option value="매월">매월</option>
+              </select>
+            </div>
+          </sc-if>
+          <div style="grid-column:1/3">
+            <label style="{{ lblStyle }}">진행률 · {{ form.progress }}%</label>
+            <input type="range" min="0" max="100" step="5" value="{{ form.progress }}" onInput="{{ fProg }}" style="width:100%;accent-color:#F37321;cursor:pointer">
+          </div>
+          <div style="grid-column:1/3">
+            <label style="{{ lblStyle }}">메모</label>
+            <textarea value="{{ form.memo }}" onInput="{{ fMemo }}" rows="2" placeholder="메모" style="{{ areaStyle }}"></textarea>
+          </div>
+          <div style="grid-column:1/3;background:#FFF7F1;border:1px solid #FADFC9;border-radius:7px;padding:11px 14px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:12.5px;color:#7a4a24;font-weight:700">예상 우선순위 점수</span>
+            <span style="font-size:20px;font-weight:900;color:#F37321">{{ formScore }}</span>
+            <span style="font-size:11.5px;color:#a06a3f">= 중요도×2 + 긴급도 + 마감 가중치</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid #EEF0F2">
+          <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ deleteTask }}" style="border:1px solid #F1C6C4;background:#fff;color:#E53935;font-weight:700;font-size:13px;padding:9px 16px;border-radius:7px;cursor:pointer">삭제</button>
+          </sc-if>
+          <div style="display:flex;gap:10px;margin-left:auto">
+            <button onClick="{{ closeModal }}" style="border:1px solid #E3E5E8;background:#fff;color:#666;font-weight:700;font-size:13px;padding:9px 18px;border-radius:7px;cursor:pointer">취소</button>
+            <button onClick="{{ saveTask }}" style="border:none;background:#F37321;color:#fff;font-weight:700;font-size:13px;padding:9px 22px;border-radius:7px;cursor:pointer">저장</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const P='#F37321', RED='#E53935', GREEN='#43A047', SUB='#888';
+const IMP={3:'상',2:'중',1:'하'}, LBL2N={'상':3,'중':2,'하':1};
+const TYPE={recurring:{label:'반복',color:'#3f6fb5'},ongoing:{label:'지속',color:'#7a5db5'},goal:{label:'목표',color:'#2f9e78'}};
+
+function pad(n){return String(n).padStart(2,'0')}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function parse(s){const [y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd)}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const T=new Date(2026,6,15); T.setHours(0,0,0,0);
+    this.today=T;
+    const gid=(n)=>'g'+n;
+    this.state={
+      view:'home', weekOffset:0, monthOffset:0,
+      modalOpen:false, editingId:null, form:null,
+      filterType:'all', filterStatus:'all', sortBy:'score',
+      nextId:100,
+      goals:[
+        {id:'g1',name:'업무 프로세스 표준화',year:2026},
+        {id:'g2',name:'부서 데이터 품질 개선',year:2026},
+        {id:'g3',name:'대외 보고체계 고도화',year:2026},
+        {id:'g4',name:'팀 역량 강화',year:2026},
+      ],
+      rules:[
+        {id:'r1',name:'연말정산 안내 발송',cycle:'매년',genPoint:'매년 1월 5일',alertDays:7,active:true},
+        {id:'r2',name:'분기 실적 보고서',cycle:'매분기',genPoint:'분기 첫 영업일',alertDays:5,active:true},
+        {id:'r3',name:'월간 부서 회의 준비',cycle:'매월',genPoint:'매월 25일',alertDays:3,active:true},
+        {id:'r4',name:'월간 지출 결의 마감',cycle:'매월',genPoint:'매월 말일',alertDays:2,active:true},
+        {id:'r5',name:'반기 인사평가 취합',cycle:'매분기',genPoint:'6월/12월 15일',alertDays:10,active:false},
+      ],
+      tasks:this.seed(),
+    };
+  }
+  seed(){
+    const T=this.today, d=(n)=>iso(addDays(T,n));
+    let i=0; const id=()=>'t'+(++i);
+    return [
+      {id:id(),name:'2분기 실적 보고서 작성',type:'goal',start:d(-12),due:d(1),imp:3,urg:3,progress:65,rawStatus:'진행중',goalId:'g3',recur:'',memo:'경영지원팀 제출본',updated:d(-1)},
+      {id:id(),name:'거래처 계약 갱신 검토',type:'ongoing',start:d(-20),due:d(2),imp:3,urg:2,progress:40,rawStatus:'진행중',goalId:'',recur:'',memo:'법무 검토 대기',updated:d(-9)},
+      {id:id(),name:'월간 부서 회의 자료',type:'recurring',start:d(0),due:d(3),imp:2,urg:3,progress:20,rawStatus:'진행중',goalId:'',recur:'매월',updated:d(0)},
+      {id:id(),name:'업무 매뉴얼 v2 개정',type:'goal',start:d(-30),due:d(18),imp:3,urg:1,progress:55,rawStatus:'진행중',goalId:'g1',recur:'',memo:'',updated:d(-2)},
+      {id:id(),name:'데이터 정합성 점검 자동화',type:'goal',start:d(-25),due:d(22),imp:2,urg:2,progress:30,rawStatus:'진행중',goalId:'g2',recur:'',memo:'',updated:d(-11)},
+      {id:id(),name:'경비 정산 마감 처리',type:'recurring',start:d(-3),due:d(-1),imp:2,urg:3,progress:70,rawStatus:'진행중',goalId:'',recur:'매월',updated:d(-1)},
+      {id:id(),name:'신규 입사자 온보딩 준비',type:'ongoing',start:d(-5),due:d(6),imp:2,urg:2,progress:50,rawStatus:'진행중',goalId:'g4',recur:'',updated:d(-3)},
+      {id:id(),name:'연말정산 안내 초안',type:'recurring',start:d(2),due:d(9),imp:1,urg:1,progress:0,rawStatus:'예정',goalId:'',recur:'매년',updated:d(0)},
+      {id:id(),name:'부서 KPI 대시보드 구축',type:'goal',start:d(-18),due:d(30),imp:3,urg:1,progress:45,rawStatus:'진행중',goalId:'g2',recur:'',updated:d(-4)},
+      {id:id(),name:'외부 감사 대응 자료',type:'ongoing',start:d(-2),due:d(4),imp:3,urg:3,progress:25,rawStatus:'진행중',goalId:'g3',recur:'',updated:d(-1)},
+      {id:id(),name:'표준 문서양식 배포',type:'goal',start:d(-40),due:d(-8),imp:2,urg:2,progress:100,rawStatus:'완료',goalId:'g1',recur:'',updated:d(-8)},
+      {id:id(),name:'팀 교육 세션 운영',type:'goal',start:d(-10),due:d(12),imp:1,urg:2,progress:35,rawStatus:'진행중',goalId:'g4',recur:'',updated:d(-6)},
+      {id:id(),name:'분기 예산 집행 점검',type:'recurring',start:d(-1),due:d(5),imp:2,urg:2,progress:15,rawStatus:'진행중',goalId:'',recur:'매분기',updated:d(-1)},
+      {id:id(),name:'협업 툴 이관 계획 수립',type:'ongoing',start:d(-14),due:d(20),imp:1,urg:1,progress:60,rawStatus:'진행중',goalId:'g1',recur:'',updated:d(-12)},
+      {id:id(),name:'주간 업무 현황 정리',type:'recurring',start:d(0),due:d(0),imp:1,urg:2,progress:80,rawStatus:'진행중',goalId:'',recur:'매월',updated:d(0)},
+    ];
+  }
+  dday(due){ return Math.round((parse(due)-this.today)/86400000) }
+  score(t){
+    let s=t.imp*2+t.urg;
+    const dd=this.dday(t.due);
+    if(t.rawStatus!=='완료' && dd<=3) s+=1;
+    return s;
+  }
+  statusOf(t){
+    if(t.progress>=100||t.rawStatus==='완료')return'완료';
+    if(this.dday(t.due)<0)return'지연';
+    return t.progress>0?'진행중':'예정';
+  }
+  stalled(t){
+    if(t.progress>=100)return false;
+    const gap=Math.round((this.today-parse(t.updated))/86400000);
+    return gap>=7;
+  }
+  ddayView(t){
+    const dd=this.dday(t.due), st=this.statusOf(t);
+    let label, over=false;
+    if(dd<0){label='D+'+(-dd);over=true;} else if(dd===0){label='D-DAY';} else {label='D-'+dd;}
+    const urgent=(dd<=3 && st!=='완료');
+    const color=(over&&st!=='완료')?RED:(urgent?P:SUB);
+    return {label,color,over,style:`font-size:11px;font-weight:700;color:${color}`};
+  }
+  typeBadge(type){
+    const c=TYPE[type];
+    return {label:c.label,style:`background:#fff;border:1px solid ${c.color}55;color:${c.color};font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:4px;flex:none`};
+  }
+  barColor(t){const st=this.statusOf(t);return st==='완료'?GREEN:(st==='지연'?RED:P)}
+
+  goalRollup(g){
+    const ts=this.state.tasks.filter(t=>t.goalId===g.id);
+    const pct=ts.length?Math.round(ts.reduce((a,t)=>a+t.progress,0)/ts.length):0;
+    // time elapsed across linked tasks
+    let timePct=0;
+    if(ts.length){
+      let acc=0,n=0;
+      ts.forEach(t=>{const s=parse(t.start),e=parse(t.due);const span=(e-s)/86400000;if(span>0){acc+=Math.max(0,Math.min(100,Math.round((this.today-s)/86400000/span*100)));n++;}});
+      timePct=n?Math.round(acc/n):0;
+    }
+    const behind = timePct-pct>=15;
+    return {pct,timePct,behind,tasks:ts};
+  }
+
+  // ---- handlers ----
+  setView=(v)=>this.setState({view:v})
+  prevWeek=()=>this.setState(s=>({weekOffset:s.weekOffset-1}))
+  nextWeek=()=>this.setState(s=>({weekOffset:s.weekOffset+1}))
+  thisWeek=()=>this.setState({weekOffset:0})
+  prevMonth=()=>this.setState(s=>({monthOffset:s.monthOffset-1}))
+  nextMonth=()=>this.setState(s=>({monthOffset:s.monthOffset+1}))
+  thisMonth=()=>this.setState({monthOffset:0})
+  setSort=(e)=>this.setState({sortBy:e.target.value})
+
+  openNew=()=>this.setState({modalOpen:true,editingId:null,form:{name:'',desc:'',type:'ongoing',start:iso(this.today),due:iso(addDays(this.today,7)),imp:2,urg:2,recur:'매월',goalId:'',progress:0,memo:''}})
+  openEdit=(id)=>{const t=this.state.tasks.find(x=>x.id===id);if(!t)return;this.setState({modalOpen:true,editingId:id,form:{name:t.name,desc:t.desc||'',type:t.type,start:t.start,due:t.due,imp:t.imp,urg:t.urg,recur:t.recur||'매월',goalId:t.goalId||'',progress:t.progress,memo:t.memo||''}})}
+  closeModal=()=>this.setState({modalOpen:false})
+  setForm=(k,v)=>this.setState(s=>({form:{...s.form,[k]:v}}))
+  saveTask=()=>{
+    const f=this.state.form; if(!f.name.trim())return;
+    this.setState(s=>{
+      if(s.editingId){
+        return {tasks:s.tasks.map(t=>t.id===s.editingId?{...t,...f,rawStatus:f.progress>=100?'완료':(f.progress>0?'진행중':t.rawStatus),updated:iso(this.today)}:t),modalOpen:false};
+      }
+      const nt={id:'t'+s.nextId,...f,rawStatus:f.progress>=100?'완료':(f.progress>0?'진행중':'예정'),updated:iso(this.today)};
+      return {tasks:[nt,...s.tasks],nextId:s.nextId+1,modalOpen:false};
+    });
+  }
+  deleteTask=()=>this.setState(s=>({tasks:s.tasks.filter(t=>t.id!==s.editingId),modalOpen:false}))
+  setProgress=(id,v)=>this.setState(s=>({tasks:s.tasks.map(t=>t.id===id?{...t,progress:v,rawStatus:v>=100?'완료':(v>0&&t.rawStatus==='예정'?'진행중':t.rawStatus),updated:iso(this.today)}:t)}))
+  setStatus=(id,v)=>this.setState(s=>({tasks:s.tasks.map(t=>t.id===id?{...t,rawStatus:v,progress:v==='완료'?100:(v==='예정'?0:t.progress),updated:iso(this.today)}:t)}))
+  toggleRule=(id)=>this.setState(s=>({rules:s.rules.map(r=>r.id===id?{...r,active:!r.active}:r)}))
+  setFilter=(k,v)=>this.setState({[k]:v})
+
+  navStyle(active){
+    return `height:56px;padding:0 16px;border:none;background:none;cursor:pointer;font-size:13.5px;font-weight:${active?700:500};color:${active?P:'#555'};border-bottom:3px solid ${active?P:'transparent'};margin-bottom:-1px`;
+  }
+  chip(active){
+    return `height:28px;padding:0 12px;border:1px solid ${active?P:'#E3E5E8'};background:${active?P:'#fff'};color:${active?'#fff':'#666'};border-radius:15px;font-size:12px;font-weight:${active?700:500};cursor:pointer`;
+  }
+  segBtn(active){
+    return `flex:1;height:34px;border:1px solid ${active?P:'#E3E5E8'};background:${active?'#FFF4EC':'#fff'};color:${active?P:'#888'};border-radius:7px;font-size:13px;font-weight:${active?700:500};cursor:pointer`;
+  }
+
+  renderVals(){
+    const S=this.state, self=this;
+    const decorate=(t)=>{
+      const tb=this.typeBadge(t.type), dv=this.ddayView(t);
+      return {...t, score:this.score(t), status:this.statusOf(t), stalled:this.stalled(t),
+        typeLabel:tb.label, typeBadge:tb.style, ddayLabel:dv.label, ddayStyle:dv.style,
+        impLabel:IMP[t.imp], urgLabel:IMP[t.urg], barColor:this.barColor(t),
+        startLabel:t.start.slice(5).replace('-','/'), dueLabel:t.due.slice(5).replace('-','/'),
+        open:()=>this.openEdit(t.id)};
+    };
+    const all=S.tasks.map(decorate);
+    const active=all.filter(t=>t.status!=='완료');
+
+    // nav
+    const navDefs=[['home','홈'],['tasks','업무 목록'],['matrix','매트릭스'],['recurring','반복 일정'],['goals','연간 목표']];
+    const navItems=navDefs.map(([v,l])=>({label:l,style:this.navStyle(S.view===v),go:()=>this.setView(v)}));
+
+    // alerts (recurring within alert window + overdue)
+    const overdue=active.filter(t=>t.ddayStyle.includes(RED)&&t.status==='지연');
+    const soon=active.filter(t=>t.type==='recurring'&&this.dday(t.due)>=0&&this.dday(t.due)<=5);
+    const alerts=[];
+    overdue.slice(0,2).forEach(t=>alerts.push(`${t.name} 마감 경과 (지연)`));
+    soon.slice(0,2).forEach(t=>alerts.push(`반복 일정 「${t.name}」 ${t.ddayLabel}`));
+    const alertsCapped=alerts.slice(0,3);
+    if(alertsCapped.length===0)alertsCapped.push('오늘 예정된 지연·임박 알림이 없습니다');
+
+    // weekly
+    const wkStart=addDays(this.today,-((this.today.getDay()+6)%7)+S.weekOffset*7);
+    const DOW=['월','화','수','목','금','토','일'];
+    const byDue={}; S.tasks.forEach(t=>{(byDue[t.due]=byDue[t.due]||[]).push(t)});
+    const weekDays=DOW.map((dw,i)=>{
+      const dt=addDays(wkStart,i), key=iso(dt), isToday=key===iso(this.today);
+      const weekend=i>=5;
+      const items=(byDue[key]||[]).slice(0,4).map(t=>{
+        const st=this.statusOf(t), c=st==='지연'?RED:(st==='완료'?GREEN:P);
+        return {name:t.name,style:`font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis`};
+      });
+      return {dow:dw,date:dt.getDate(),items,
+        colStyle:`border-right:${i<6?'1px solid #EEF0F2':'none'};background:${isToday?'#FFFBF7':'#fff'}`,
+        headStyle:`text-align:center;padding:7px 0;border-bottom:1px solid #EEF0F2;background:${isToday?'#FFF4EC':'#FAFBFC'}`,
+        dowStyle:`font-size:11px;font-weight:700;color:${isToday?P:(weekend?'#bbb':'#888')}`,
+        dateStyle:`display:block;font-size:14px;font-weight:${isToday?900:700};color:${isToday?P:(weekend?'#bbb':'#444')};margin-top:1px`};
+    });
+    const we=addDays(wkStart,6);
+    const weekRangeLabel=`${wkStart.getMonth()+1}/${wkStart.getDate()} – ${we.getMonth()+1}/${we.getDate()}`;
+
+    // monthly
+    const base=new Date(this.today.getFullYear(),this.today.getMonth()+S.monthOffset,1);
+    const monthLabel=`${base.getFullYear()}년 ${base.getMonth()+1}월`;
+    const first=new Date(base.getFullYear(),base.getMonth(),1);
+    const gridStart=addDays(first,-((first.getDay()+6)%7));
+    const dowHeaders=DOW.map((d,i)=>({label:d,style:`text-align:center;font-size:11px;font-weight:700;padding:6px 0;color:${i>=5?'#bbb':'#999'}`}));
+    const monthCells=[];
+    for(let i=0;i<42;i++){
+      const dt=addDays(gridStart,i), key=iso(dt);
+      const inMonth=dt.getMonth()===base.getMonth();
+      const isToday=key===iso(this.today);
+      const day=dt.getDate(), weekend=(i%7)>=5;
+      const dayTasks=byDue[key]||[];
+      const items=dayTasks.slice(0,2).map(t=>{
+        const st=this.statusOf(t), c=st==='지연'?RED:(st==='완료'?GREEN:P);
+        return {name:t.name,style:`font-size:9.5px;line-height:1.2;padding:1px 4px;border-radius:3px;background:${c}18;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis`};
+      });
+      monthCells.push({day,items,more:dayTasks.length-2,moreShow:dayTasks.length>2,
+        cellStyle:`min-height:70px;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday?'#FFFBF7':(inMonth?'#fff':'#FAFBFC')};opacity:${inMonth?1:.5}`,
+        numStyle:`font-size:11.5px;font-weight:${isToday?900:600};color:${isToday?'#fff':(weekend?'#bbb':'#555')};${isToday?`background:${P};border-radius:50%;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center`:''}`});
+    }
+    // trim empty trailing week
+    const cells=monthCells.slice(0, (gridStart.getDate()!==1 || monthCells[35].items.length? (monthCells.slice(35).some(c=>false),42):42));
+
+    // top5
+    const top5=[...active].sort((a,b)=>b.score-a.score||this.dday(a.due)-this.dday(b.due)).slice(0,5).map((t,i)=>({
+      ...t, rank:i+1, open:t.open,
+      rowStyle:`display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i<4?'1px solid #F2F3F5':'none'}`,
+      rankStyle:`width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i===0?P:(i<3?'#F9A46A':'#cfd2d6')}`}));
+
+    // ongoing cards
+    const ongoing=active.filter(t=>t.type==='ongoing'||t.type==='goal');
+    const ongoingCards=[...ongoing].sort((a,b)=>this.dday(a.due)-this.dday(b.due)).map(t=>({
+      ...t, prioLabel:t.score+'점', open:t.open,
+      prioBadge:`background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`}));
+
+    // goal gauges (home) + details
+    const goalGauges=S.goals.map(g=>{
+      const r=this.goalRollup(g), C=2*Math.PI*44;
+      const tag=r.behind?'지연 위험':'정상';
+      return {name:g.name,pct:r.pct,color:r.behind?RED:P,dash:`${C*r.pct/100} ${C}`,
+        tag, tagStyle:`margin-top:5px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;${r.behind?`background:#FBECEC;color:${RED}`:`background:#EAF6EE;color:${GREEN}`}`};
+    });
+    const goalDetails=S.goals.map(g=>{
+      const r=this.goalRollup(g), C=2*Math.PI*27;
+      return {name:g.name,pct:r.pct,timePct:r.timePct,taskCount:r.tasks.length,color:r.behind?RED:P,dash:`${C*r.pct/100} ${C}`,
+        tag:r.behind?'지연 위험':'정상',
+        tagStyle:`font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:12px;${r.behind?`background:#FBECEC;color:${RED}`:`background:#EAF6EE;color:${GREEN}`}`,
+        tasks:r.tasks.map(decorate)};
+    });
+
+    // tasks table
+    let rows=all.filter(t=>S.filterType==='all'||t.type===S.filterType)
+                .filter(t=>S.filterStatus==='all'||t.status===S.filterStatus);
+    rows.sort((a,b)=> S.sortBy==='due'?this.dday(a.due)-this.dday(b.due):
+                      S.sortBy==='progress'?a.progress-b.progress:
+                      (b.score-a.score||this.dday(a.due)-this.dday(b.due)));
+    const decorateRow=(t)=>({...t, rawStatus:t.rawStatus, overdue:t.status==='지연',
+      setProgress:(e)=>this.setProgress(t.id,+e.target.value),
+      setStatus:(e)=>this.setStatus(t.id,e.target.value),
+      statusSelStyle:`height:28px;border:1px solid #E3E5E8;border-radius:6px;padding:0 6px;font-size:11.5px;color:${t.status==='완료'?GREEN:'#555'};font-weight:${t.status==='완료'?700:500};background:#fff`});
+    const tableRows=rows.map(decorateRow);
+    // group rows under their connected goal name
+    const goalName=(gid)=>{const g=S.goals.find(x=>x.id===gid);return g?g.name:null};
+    const order=['',...S.goals.map(g=>g.id)];
+    const tableGroups=order.map(gid=>{
+      const grp=rows.filter(t=>(t.goalId||'')===gid);
+      if(!grp.length)return null;
+      const nm=goalName(gid);
+      const avg=Math.round(grp.reduce((a,t)=>a+t.progress,0)/grp.length);
+      return {gid, isGoal:!!nm, name:nm||'목표 미연결', count:grp.length, avg,
+        headStyle:`display:flex;align-items:center;gap:9px;padding:9px 16px;background:${nm?'#FFF7F1':'#F5F6F7'};border-bottom:1px solid #EEF0F2;border-top:1px solid #EEF0F2`,
+        dotStyle:`width:8px;height:8px;border-radius:2px;background:${nm?P:'#c2c6cc'};flex:none`,
+        rows:grp.map(decorateRow)};
+    }).filter(Boolean);
+    const typeFilters=[['all','전체'],['recurring','반복'],['ongoing','지속'],['goal','목표']].map(([v,l])=>({label:l,style:this.chip(S.filterType===v),go:()=>this.setFilter('filterType',v)}));
+    const statusFilters=[['all','전체'],['예정','예정'],['진행중','진행중'],['완료','완료'],['지연','지연']].map(([v,l])=>({label:l,style:this.chip(S.filterStatus===v),go:()=>this.setFilter('filterStatus',v)}));
+
+    // matrix
+    const quad=(hi,hu)=>active.filter(t=>(t.imp>=2)===hi&&(t.urg>=2)===hu).sort((a,b)=>b.score-a.score);
+    const qmeta=[
+      {key:[true,true],title:'즉시 처리',action:'DO',dot:RED,bg:'#FFF6F5'},
+      {key:[true,false],title:'계획 수립',action:'PLAN',dot:P,bg:'#FFFAF5'},
+      {key:[false,true],title:'위임 검토',action:'DELEGATE',dot:'#3f6fb5',bg:'#F5F8FC'},
+      {key:[false,false],title:'후순위',action:'DROP',dot:'#aaa',bg:'#FAFBFC'},
+    ];
+    const quadrants=qmeta.map(m=>{
+      const items=quad(m.key[0],m.key[1]);
+      return {title:m.title,action:m.action,empty:items.length===0,
+        boxStyle:`background:${m.bg};border:1px solid #E3E5E8;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column`,
+        dotStyle:`width:9px;height:9px;border-radius:50%;background:${m.dot};display:inline-block`,
+        items:items.map(decorate)};
+    });
+
+    // rules
+    const cyc={'매년':365,'매분기':90,'매월':30};
+    const ruleRows=S.rules.map(r=>{
+      let next='—', nextColor='#666';
+      if(r.active){
+        const dt=addDays(this.today, r.cycle==='매월'?12:r.cycle==='매분기'?34:r.name.includes('연말')?174:203);
+        next=iso(dt).slice(0,10).replace(/-/g,'.');
+      } else { next='비활성'; nextColor='#bbb'; }
+      return {...r, nextGen:next, nextColor,
+        toggleStyle:`width:42px;height:23px;border-radius:12px;border:none;cursor:pointer;position:relative;background:${r.active?P:'#cfd2d6'};transition:background .15s`,
+        knobStyle:`position:absolute;top:2px;left:${r.active?'21px':'2px'};width:19px;height:19px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)`};
+    });
+
+    // modal form
+    const f=S.form||{};
+    const formScore=f.name!==undefined?(()=>{const dd=this.dday(f.due||iso(this.today));let s=(f.imp||2)*2+(f.urg||2);if((f.progress||0)<100&&dd<=3)s+=1;return s;})():0;
+    const btnStyle=(on)=>`flex:1;height:34px;border:1px solid ${on?P:'#E3E5E8'};background:${on?'#FFF4EC':'#fff'};color:${on?P:'#888'};border-radius:7px;font-size:13px;font-weight:${on?700:500};cursor:pointer`;
+    const impBtns=[3,2,1].map(n=>({label:IMP[n],style:btnStyle(f.imp===n),set:()=>this.setForm('imp',n)}));
+    const urgBtns=[3,2,1].map(n=>({label:IMP[n],style:btnStyle(f.urg===n),set:()=>this.setForm('urg',n)}));
+
+    return {
+      todayLabel:`${this.today.getFullYear()}. ${pad(this.today.getMonth()+1)}. ${pad(this.today.getDate())} (${['일','월','화','수','목','금','토'][this.today.getDay()]})`,
+      navItems, hasAlerts:true, alerts:alertsCapped,
+      isHome:S.view==='home',isTasks:S.view==='tasks',isMatrix:S.view==='matrix',isRecurring:S.view==='recurring',isGoals:S.view==='goals',
+      openNew:this.openNew, goTasks:()=>this.setView('tasks'), goGoals:()=>this.setView('goals'),
+      // weekly/monthly
+      weekDays, weekRangeLabel, prevWeek:this.prevWeek, nextWeek:this.nextWeek, thisWeek:this.thisWeek,
+      monthLabel, monthCells:cells, dowHeaders, prevMonth:this.prevMonth, nextMonth:this.nextMonth, thisMonth:this.thisMonth,
+      top5, goalGauges, ongoingCards, ongoingCount:ongoing.length,
+      // tasks
+      allCount:all.length, viewCount:rows.length, tableRows, tableGroups, typeFilters, statusFilters, sortBy:S.sortBy, setSort:this.setSort,
+      // matrix
+      quadrants,
+      // rules
+      ruleRows,
+      // goals
+      goalYear:2026, goalDetails,
+      // modal
+      modalOpen:S.modalOpen, modalTitle:S.editingId?'업무 수정':'새 업무 등록', isEditing:!!S.editingId,
+      closeModal:this.closeModal, saveTask:this.saveTask, deleteTask:this.deleteTask,
+      form:f, isRecurType:f.type==='recurring', formScore,
+      goalOptions:S.goals.map(g=>({id:g.id,name:g.name})),
+      impBtns, urgBtns,
+      fName:(e)=>this.setForm('name',e.target.value), fDesc:(e)=>this.setForm('desc',e.target.value),
+      fType:(e)=>this.setForm('type',e.target.value), fGoal:(e)=>this.setForm('goalId',e.target.value),
+      fStart:(e)=>this.setForm('start',e.target.value), fDue:(e)=>this.setForm('due',e.target.value),
+      fRecur:(e)=>this.setForm('recur',e.target.value), fProg:(e)=>this.setForm('progress',+e.target.value),
+      fMemo:(e)=>this.setForm('memo',e.target.value),
+      lblStyle:'display:block;font-size:12px;font-weight:700;color:#666;margin-bottom:6px',
+      inpStyle:'width:100%;height:38px;border:1px solid #E3E5E8;border-radius:7px;padding:0 12px;font-size:13.5px;color:#333;background:#fff',
+      selStyle:'width:100%;height:38px;border:1px solid #E3E5E8;border-radius:7px;padding:0 10px;font-size:13.5px;color:#333;background:#fff',
+      areaStyle:'width:100%;border:1px solid #E3E5E8;border-radius:7px;padding:9px 12px;font-size:13.5px;color:#333;background:#fff;resize:vertical',
+    };
+  }
+}
+</script>
+</body>
+</html>
