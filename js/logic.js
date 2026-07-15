@@ -72,6 +72,24 @@ App.logic = {
 
   goalRollup(today, tasks, g) {
     const ts = tasks.filter(t => t.goalId === g.id);
+    const metricType = g.metricType || 'progress';
+
+    if (metricType === 'numeric') {
+      // e.g. "비용 5억원 절감" — target/current are entered by hand, not derived from tasks.
+      const target = g.targetValue || 0, current = g.currentValue || 0;
+      const pct = target > 0 ? Math.max(0, Math.min(100, Math.round(current / target * 100))) : 0;
+      return { pct, timePct: null, behind: false, done: pct >= 100, tasks: ts, metricType, current, target, unit: g.targetUnit || '' };
+    }
+
+    if (metricType === 'count') {
+      // e.g. a goal made up of many small checklist-style tasks — % of those linked tasks marked 완료.
+      const total = ts.length;
+      const done = ts.filter(t => App.logic.statusOf(today, t) === '완료').length;
+      const pct = total > 0 ? Math.round(done / total * 100) : 0;
+      return { pct, timePct: null, behind: false, done: pct >= 100, tasks: ts, metricType, doneCount: done, totalCount: total };
+    }
+
+    // default 'progress' mode: average of linked tasks' progress%, compared against time elapsed.
     const pct = ts.length ? Math.round(ts.reduce((a, t) => a + t.progress, 0) / ts.length) : 0;
     let timePct = 0;
     if (ts.length) {
@@ -84,7 +102,7 @@ App.logic = {
       timePct = n ? Math.round(acc / n) : 0;
     }
     const behind = timePct - pct >= 15;
-    return { pct, timePct, behind, tasks: ts };
+    return { pct, timePct, behind, done: pct >= 100, tasks: ts, metricType };
   },
 
   navStyle(active) {

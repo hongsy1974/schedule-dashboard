@@ -356,7 +356,7 @@
           </div>
           <div style="flex:1">
             <div style="font-size:16px;font-weight:900">${esc(g.name)}</div>
-            <div style="font-size:12.5px;color:#888;margin-top:3px">실행 계획 ${g.taskCount}건 · 시간 경과율 ${g.timePct}%</div>
+            <div style="font-size:12.5px;color:#888;margin-top:3px">${esc(g.subtitle)}</div>
           </div>
           <div style="${g.tagStyle}">${g.tag}</div>
           <button data-action="openEditGoal" data-id="${g.id}" style="border:1px solid #E3E5E8;background:#fff;color:#666;font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer">수정</button>
@@ -378,7 +378,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <div>
         <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">연간 목표 관리</h1>
-        <div style="font-size:12.5px;color:#888;margin-top:3px">${vm.goalYear}년 · 목표 달성률은 연결된 실행 계획 진행률의 평균으로 자동 집계</div>
+        <div style="font-size:12.5px;color:#888;margin-top:3px">${vm.goalYear}년 · 목표별 달성 방식(진행률 평균/수치 목표/업무 완료 건수)에 따라 자동 집계</div>
       </div>
       <button data-action="openNewGoal" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 목표 추가</button>
     </div>
@@ -482,9 +482,33 @@
   function renderGoalModal(vm) {
     if (!vm.goalModalOpen) return '';
     const f = vm.goalForm;
+    const metricNote = f.metricType === 'count'
+      ? '<div style="font-size:12px;color:#888;background:#F5F6F7;border-radius:7px;padding:10px 12px">연결된 업무 중 "완료" 처리된 건수 비율로 자동 계산됩니다.</div>'
+      : f.metricType === 'progress'
+        ? '<div style="font-size:12px;color:#888;background:#F5F6F7;border-radius:7px;padding:10px 12px">연결된 업무들의 진행률 평균으로 자동 계산됩니다.</div>'
+        : '';
+    const numericFields = f.metricType === 'numeric' ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <label style="${lblStyle}">목표 수치</label>
+          <input id="gf-target" type="number" data-action="gfTarget" value="${f.targetValue}" style="${inpStyle}">
+        </div>
+        <div>
+          <label style="${lblStyle}">단위</label>
+          <input id="gf-unit" data-action="gfUnit" value="${esc(f.targetUnit)}" placeholder="예: 억원" style="${inpStyle}">
+        </div>
+      </div>
+      <div>
+        <label style="${lblStyle}">현재 값</label>
+        <input id="gf-current" type="number" data-action="gfCurrent" value="${f.currentValue}" style="${inpStyle}">
+      </div>
+      <div style="background:#FFF7F1;border:1px solid #FADFC9;border-radius:7px;padding:11px 14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:12.5px;color:#7a4a24;font-weight:700">예상 달성률</span>
+        <span style="font-size:20px;font-weight:900;color:#F37321">${vm.goalFormPct}%</span>
+      </div>` : '';
     return `
     <div style="position:fixed;inset:0;background:rgba(30,32,36,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow:auto;animation:ovIn .12s ease">
-      <div style="width:420px;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mdIn .16s ease">
+      <div style="width:440px;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mdIn .16s ease">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #EEF0F2">
           <span style="font-size:16px;font-weight:900">${vm.goalModalTitle}</span>
           <button data-action="closeGoalModal" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">×</button>
@@ -498,6 +522,16 @@
             <label style="${lblStyle}">연도</label>
             <input id="gf-year" type="number" data-action="gfYear" value="${f.year}" style="${inpStyle}">
           </div>
+          <div>
+            <label style="${lblStyle}">달성 방식</label>
+            <select id="gf-metric" data-action="gfMetric" style="${selStyle}">
+              <option value="progress" ${f.metricType === 'progress' ? 'selected' : ''}>진행률 평균 (연결 업무 진행률 평균)</option>
+              <option value="numeric" ${f.metricType === 'numeric' ? 'selected' : ''}>수치 목표 (예: 비용 절감액)</option>
+              <option value="count" ${f.metricType === 'count' ? 'selected' : ''}>업무 완료 건수 (완료 수 / 전체 수)</option>
+            </select>
+          </div>
+          ${metricNote}
+          ${numericFields}
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid #EEF0F2">
           ${vm.isEditingGoal ? `<button data-action="deleteGoal" style="border:1px solid #F1C6C4;background:#fff;color:#E53935;font-weight:700;font-size:13px;padding:9px 16px;border-radius:7px;cursor:pointer">삭제</button>` : '<div></div>'}

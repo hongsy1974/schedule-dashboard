@@ -98,24 +98,40 @@ App.computeViewModel = function (state) {
     prioBadge: `background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`
   }));
 
+  // Goal status coloring: 'progress' mode compares value achieved vs time elapsed
+  // (지연 위험 if behind schedule); numeric/count modes have no timeline to compare
+  // against, so they just report 달성 vs 진행중.
+  const goalStatus = (r) => {
+    if (r.metricType === 'progress') {
+      return { bad: r.behind, good: !r.behind, tag: r.behind ? '지연 위험' : '정상' };
+    }
+    return { bad: false, good: r.done, tag: r.done ? '달성' : '진행중' };
+  };
+
   // goal gauges (home)
   const goalGauges = S.goals.map(g => {
     const r = goalRollup(today, S.tasks, g), C = 2 * Math.PI * 44;
-    const tag = r.behind ? '지연 위험' : '정상';
+    const st = goalStatus(r);
+    const color = st.bad ? RED : (st.good ? GREEN : P);
     return {
-      name: g.name, pct: r.pct, color: r.behind ? RED : P, dash: `${C * r.pct / 100} ${C}`, tag,
-      tagStyle: `margin-top:5px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;${r.behind ? `background:#FBECEC;color:${RED}` : `background:#EAF6EE;color:${GREEN}`}`
+      name: g.name, pct: r.pct, color, dash: `${C * r.pct / 100} ${C}`, tag: st.tag,
+      tagStyle: `margin-top:5px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;${st.bad ? `background:#FBECEC;color:${RED}` : (st.good ? `background:#EAF6EE;color:${GREEN}` : `background:#FFF4EC;color:${P}`)}`
     };
   });
 
   // goal details (goals view)
   const goalDetails = S.goals.map(g => {
     const r = goalRollup(today, S.tasks, g), C = 2 * Math.PI * 27;
+    const st = goalStatus(r);
+    const color = st.bad ? RED : (st.good ? GREEN : P);
+    const subtitle = r.metricType === 'numeric' ? `현재 ${r.current}${r.unit} / 목표 ${r.target}${r.unit}`
+      : r.metricType === 'count' ? `세부 업무 ${r.doneCount}/${r.totalCount}건 완료`
+      : `실행 계획 ${r.tasks.length}건 · 시간 경과율 ${r.timePct}%`;
     return {
-      id: g.id, name: g.name, pct: r.pct, timePct: r.timePct, taskCount: r.tasks.length,
-      color: r.behind ? RED : P, dash: `${C * r.pct / 100} ${C}`,
-      tag: r.behind ? '지연 위험' : '정상',
-      tagStyle: `font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:12px;${r.behind ? `background:#FBECEC;color:${RED}` : `background:#EAF6EE;color:${GREEN}`}`,
+      id: g.id, name: g.name, pct: r.pct, subtitle,
+      color, dash: `${C * r.pct / 100} ${C}`,
+      tag: st.tag,
+      tagStyle: `font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:12px;${st.bad ? `background:#FBECEC;color:${RED}` : (st.good ? `background:#EAF6EE;color:${GREEN}` : `background:#FFF4EC;color:${P}`)}`,
       tasks: r.tasks.map(decorate)
     };
   });
@@ -197,6 +213,13 @@ App.computeViewModel = function (state) {
   const impBtns = [3, 2, 1].map(n => ({ value: n, label: IMP[n], style: btnStyle(f.imp === n) }));
   const urgBtns = [3, 2, 1].map(n => ({ value: n, label: IMP[n], style: btnStyle(f.urg === n) }));
 
+  // goal form (live preview for numeric-target mode only — progress/count modes are
+  // derived from linked tasks, not from anything entered in this modal)
+  const gf = S.goalForm || {};
+  const goalFormPct = gf.metricType === 'numeric'
+    ? ((+gf.targetValue || 0) > 0 ? Math.max(0, Math.min(100, Math.round((+gf.currentValue || 0) / (+gf.targetValue || 0) * 100))) : 0)
+    : null;
+
   return {
     todayLabel: `${today.getFullYear()}. ${App.util.pad(today.getMonth() + 1)}. ${App.util.pad(today.getDate())} (${['일', '월', '화', '수', '목', '금', '토'][today.getDay()]})`,
     navItems, alerts: alertsCapped,
@@ -213,6 +236,6 @@ App.computeViewModel = function (state) {
     goalOptions: S.goals.map(g => ({ id: g.id, name: g.name })),
     impBtns, urgBtns,
     goalModalOpen: S.goalModalOpen, goalModalTitle: S.editingGoalId ? '목표 수정' : '새 목표 추가', isEditingGoal: !!S.editingGoalId,
-    goalForm: S.goalForm || {},
+    goalForm: gf, isNumericGoal: gf.metricType === 'numeric', goalFormPct,
   };
 };

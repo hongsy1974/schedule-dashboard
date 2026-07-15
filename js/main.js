@@ -88,6 +88,7 @@
     else if (action === 'fType') App.actions.setForm('type', el.value);
     else if (action === 'fGoal') App.actions.setForm('goalId', el.value);
     else if (action === 'fRecur') App.actions.setForm('recur', el.value);
+    else if (action === 'gfMetric') App.actions.setGoalForm('metricType', el.value);
   });
 
   root.addEventListener('input', (e) => {
@@ -107,14 +108,17 @@
     if (action === 'fDesc') return App.actions.setFormQuiet('desc', el.value);
     if (action === 'fMemo') return App.actions.setFormQuiet('memo', el.value);
     if (action === 'gfName') return App.actions.setGoalFormQuiet('name', el.value);
+    if (action === 'gfUnit') return App.actions.setGoalFormQuiet('targetUnit', el.value);
 
     // Everything below is a date/number/range input, never IME-composed, so a
-    // normal rerender (needed to keep the live 예상 우선순위 점수 in sync) is safe.
+    // normal rerender (needed to keep the live 예상 우선순위 점수 / 예상 달성률 in sync) is safe.
     if (e.isComposing) return;
     if (action === 'fStart') App.actions.setForm('start', el.value);
     else if (action === 'fDue') App.actions.setForm('due', el.value);
     else if (action === 'fProg') App.actions.setForm('progress', +el.value);
     else if (action === 'gfYear') App.actions.setGoalForm('year', +el.value);
+    else if (action === 'gfTarget') App.actions.setGoalForm('targetValue', +el.value);
+    else if (action === 'gfCurrent') App.actions.setGoalForm('currentValue', +el.value);
   });
 
   rerender();

@@ -107,7 +107,7 @@ App.actions = {
   openNewGoal() {
     App.state.goalModalOpen = true;
     App.state.editingGoalId = null;
-    App.state.goalForm = { name: '', year: App.today.getFullYear() };
+    App.state.goalForm = { name: '', year: App.today.getFullYear(), metricType: 'progress', targetValue: 0, targetUnit: '', currentValue: 0 };
     App.actions.rerender();
   },
 
@@ -116,7 +116,7 @@ App.actions = {
     if (!g) return;
     App.state.goalModalOpen = true;
     App.state.editingGoalId = id;
-    App.state.goalForm = { name: g.name, year: g.year };
+    App.state.goalForm = { name: g.name, year: g.year, metricType: g.metricType || 'progress', targetValue: g.targetValue || 0, targetUnit: g.targetUnit || '', currentValue: g.currentValue || 0 };
     App.actions.rerender();
   },
 
@@ -127,7 +127,10 @@ App.actions = {
   saveGoal() {
     const f = App.state.goalForm;
     if (!f.name.trim()) return;
-    const payload = { name: f.name.trim(), year: f.year };
+    const payload = {
+      name: f.name.trim(), year: f.year, metricType: f.metricType || 'progress',
+      targetValue: +f.targetValue || 0, targetUnit: f.targetUnit || '', currentValue: +f.currentValue || 0
+    };
     if (App.state.editingGoalId) {
       const eid = App.state.editingGoalId;
       App.state.goals = App.state.goals.map(g => g.id === eid ? { ...g, ...payload } : g);
