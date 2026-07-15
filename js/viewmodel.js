@@ -83,7 +83,7 @@ App.computeViewModel = function (state) {
     });
     monthCells.push({
       day, items, more: dayTasks.length - 2, moreShow: dayTasks.length > 2,
-      cellStyle: `min-height:70px;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
+      cellStyle: `height:70px;overflow:hidden;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
       numStyle: `font-size:11.5px;font-weight:${isToday ? 900 : 600};color:${isToday ? '#fff' : (weekend ? '#bbb' : '#555')};${isToday ? `background:${P};border-radius:50%;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center` : ''}`
     });
   }

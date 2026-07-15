@@ -45,7 +45,7 @@
           <span style="${d.dowStyle}">${d.dow}</span>
           <span style="${d.dateStyle}">${d.date}</span>
         </div>
-        <div style="padding:7px 6px;display:flex;flex-direction:column;gap:4px;min-height:96px">
+        <div style="padding:7px 6px;display:flex;flex-direction:column;gap:4px;height:96px;overflow:hidden">
           ${d.items.map(taskChip).join('')}
         </div>
       </div>`).join('');
@@ -98,7 +98,7 @@
       </div>
       <div style="padding:12px 14px 16px">
         <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px">${heads}</div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">${cells}</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:70px;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">${cells}</div>
       </div>
     </div>`;
   }
