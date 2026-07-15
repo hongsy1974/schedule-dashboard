@@ -1,0 +1,212 @@
+App.computeViewModel = function (state) {
+  const today = App.today;
+  const { P, RED, GREEN, IMP } = App.const;
+  const { dday, score, statusOf, stalled, ddayView, typeBadge, barColor, goalRollup } = App.logic;
+  const { iso, addDays } = App.util;
+  const S = state;
+
+  const decorate = (t) => {
+    const tb = typeBadge(t.type), dv = ddayView(today, t);
+    return {
+      ...t,
+      score: score(today, t),
+      status: statusOf(today, t),
+      stalled: stalled(today, t),
+      typeLabel: tb.label, typeBadgeStyle: tb.style,
+      ddayLabel: dv.label, ddayStyle: dv.style, ddayOver: dv.over,
+      impLabel: IMP[t.imp], urgLabel: IMP[t.urg],
+      barColor: barColor(today, t),
+      startLabel: t.start.slice(5).replace('-', '/'),
+      dueLabel: t.due.slice(5).replace('-', '/'),
+    };
+  };
+
+  const all = S.tasks.map(decorate);
+  const active = all.filter(t => t.status !== '완료');
+
+  // nav
+  const navDefs = [['home', '홈'], ['tasks', '업무 목록'], ['matrix', '매트릭스'], ['recurring', '반복 일정'], ['goals', '연간 목표']];
+  const navItems = navDefs.map(([v, l]) => ({ view: v, label: l, active: S.view === v }));
+
+  // alerts
+  const overdue = active.filter(t => t.status === '지연');
+  const soon = active.filter(t => t.type === 'recurring' && dday(today, t.due) >= 0 && dday(today, t.due) <= 5);
+  const alerts = [];
+  overdue.slice(0, 2).forEach(t => alerts.push(`${t.name} 마감 경과 (지연)`));
+  soon.slice(0, 2).forEach(t => alerts.push(`반복 일정 「${t.name}」 ${t.ddayLabel}`));
+  const alertsCapped = alerts.slice(0, 3);
+  if (alertsCapped.length === 0) alertsCapped.push('오늘 예정된 지연·임박 알림이 없습니다');
+
+  // weekly
+  const DOW = ['월', '화', '수', '목', '금', '토', '일'];
+  const wkStart = addDays(today, -((today.getDay() + 6) % 7) + S.weekOffset * 7);
+  const byDue = {};
+  S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
+  const weekDays = DOW.map((dw, i) => {
+    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
+    const weekend = i >= 5;
+    const items = (byDue[key] || []).slice(0, 4).map(t => {
+      const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
+      return { name: t.name, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis` };
+    });
+    return {
+      dow: dw, date: dt.getDate(), items,
+      colStyle: `border-right:${i < 6 ? '1px solid #EEF0F2' : 'none'};background:${isToday ? '#FFFBF7' : '#fff'}`,
+      headStyle: `text-align:center;padding:7px 0;border-bottom:1px solid #EEF0F2;background:${isToday ? '#FFF4EC' : '#FAFBFC'}`,
+      dowStyle: `font-size:11px;font-weight:700;color:${isToday ? P : (weekend ? '#bbb' : '#888')}`,
+      dateStyle: `display:block;font-size:14px;font-weight:${isToday ? 900 : 700};color:${isToday ? P : (weekend ? '#bbb' : '#444')};margin-top:1px`
+    };
+  });
+  const we = addDays(wkStart, 6);
+  const weekRangeLabel = `${wkStart.getMonth() + 1}/${wkStart.getDate()} – ${we.getMonth() + 1}/${we.getDate()}`;
+
+  // monthly
+  const base = new Date(today.getFullYear(), today.getMonth() + S.monthOffset, 1);
+  const monthLabel = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
+  const first = new Date(base.getFullYear(), base.getMonth(), 1);
+  const gridStart = addDays(first, -((first.getDay() + 6) % 7));
+  const dowHeaders = DOW.map((d, i) => ({ label: d, style: `text-align:center;font-size:11px;font-weight:700;padding:6px 0;color:${i >= 5 ? '#bbb' : '#999'}` }));
+  const monthCells = [];
+  for (let i = 0; i < 42; i++) {
+    const dt = addDays(gridStart, i), key = iso(dt);
+    const inMonth = dt.getMonth() === base.getMonth();
+    const isToday = key === iso(today);
+    const day = dt.getDate(), weekend = (i % 7) >= 5;
+    const dayTasks = byDue[key] || [];
+    const items = dayTasks.slice(0, 2).map(t => {
+      const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
+      return { name: t.name, style: `font-size:9.5px;line-height:1.2;padding:1px 4px;border-radius:3px;background:${c}18;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis` };
+    });
+    monthCells.push({
+      day, items, more: dayTasks.length - 2, moreShow: dayTasks.length > 2,
+      cellStyle: `min-height:70px;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
+      numStyle: `font-size:11.5px;font-weight:${isToday ? 900 : 600};color:${isToday ? '#fff' : (weekend ? '#bbb' : '#555')};${isToday ? `background:${P};border-radius:50%;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center` : ''}`
+    });
+  }
+
+  // top5
+  const top5 = [...active].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, 5).map((t, i) => ({
+    ...t, rank: i + 1,
+    rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < 4 ? '1px solid #F2F3F5' : 'none'}`,
+    rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
+  }));
+
+  // ongoing cards
+  const ongoing = active.filter(t => t.type === 'ongoing' || t.type === 'goal');
+  const ongoingCards = [...ongoing].sort((a, b) => dday(today, a.due) - dday(today, b.due)).map(t => ({
+    ...t, prioLabel: t.score + '점',
+    prioBadge: `background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`
+  }));
+
+  // goal gauges (home)
+  const goalGauges = S.goals.map(g => {
+    const r = goalRollup(today, S.tasks, g), C = 2 * Math.PI * 44;
+    const tag = r.behind ? '지연 위험' : '정상';
+    return {
+      name: g.name, pct: r.pct, color: r.behind ? RED : P, dash: `${C * r.pct / 100} ${C}`, tag,
+      tagStyle: `margin-top:5px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:10px;${r.behind ? `background:#FBECEC;color:${RED}` : `background:#EAF6EE;color:${GREEN}`}`
+    };
+  });
+
+  // goal details (goals view)
+  const goalDetails = S.goals.map(g => {
+    const r = goalRollup(today, S.tasks, g), C = 2 * Math.PI * 27;
+    return {
+      id: g.id, name: g.name, pct: r.pct, timePct: r.timePct, taskCount: r.tasks.length,
+      color: r.behind ? RED : P, dash: `${C * r.pct / 100} ${C}`,
+      tag: r.behind ? '지연 위험' : '정상',
+      tagStyle: `font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:12px;${r.behind ? `background:#FBECEC;color:${RED}` : `background:#EAF6EE;color:${GREEN}`}`,
+      tasks: r.tasks.map(decorate)
+    };
+  });
+
+  // tasks table
+  let rows = all.filter(t => S.filterType === 'all' || t.type === S.filterType)
+    .filter(t => S.filterStatus === 'all' || t.status === S.filterStatus);
+  rows.sort((a, b) => S.sortBy === 'due' ? dday(today, a.due) - dday(today, b.due) :
+    S.sortBy === 'progress' ? a.progress - b.progress :
+      (b.score - a.score || dday(today, a.due) - dday(today, b.due)));
+  const decorateRow = (t) => ({
+    ...t, overdue: t.status === '지연',
+    statusSelStyle: `height:28px;border:1px solid #E3E5E8;border-radius:6px;padding:0 6px;font-size:11.5px;color:${t.status === '완료' ? GREEN : '#555'};font-weight:${t.status === '완료' ? 700 : 500};background:#fff`
+  });
+
+  const goalName = (gid) => { const g = S.goals.find(x => x.id === gid); return g ? g.name : null; };
+  const order = ['', ...S.goals.map(g => g.id)];
+  const tableGroups = order.map(gid => {
+    const grp = rows.filter(t => (t.goalId || '') === gid);
+    if (!grp.length) return null;
+    const nm = goalName(gid);
+    const avg = Math.round(grp.reduce((a, t) => a + t.progress, 0) / grp.length);
+    return {
+      gid, isGoal: !!nm, name: nm || '목표 미연결', count: grp.length, avg,
+      headStyle: `display:flex;align-items:center;gap:9px;padding:9px 16px;background:${nm ? '#FFF7F1' : '#F5F6F7'};border-bottom:1px solid #EEF0F2;border-top:1px solid #EEF0F2`,
+      dotStyle: `width:8px;height:8px;border-radius:2px;background:${nm ? P : '#c2c6cc'};flex:none`,
+      rows: grp.map(decorateRow)
+    };
+  }).filter(Boolean);
+
+  const typeFilters = [['all', '전체'], ['recurring', '반복'], ['ongoing', '지속'], ['goal', '목표']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
+  const statusFilters = [['all', '전체'], ['예정', '예정'], ['진행중', '진행중'], ['완료', '완료'], ['지연', '지연']].map(([v, l]) => ({ value: v, label: l, active: S.filterStatus === v }));
+
+  // matrix
+  const quad = (hi, hu) => active.filter(t => (t.imp >= 2) === hi && (t.urg >= 2) === hu).sort((a, b) => b.score - a.score);
+  const qmeta = [
+    { key: [true, true], title: '즉시 처리', action: 'DO', dot: RED, bg: '#FFF6F5' },
+    { key: [true, false], title: '계획 수립', action: 'PLAN', dot: P, bg: '#FFFAF5' },
+    { key: [false, true], title: '위임 검토', action: 'DELEGATE', dot: '#3f6fb5', bg: '#F5F8FC' },
+    { key: [false, false], title: '후순위', action: 'DROP', dot: '#aaa', bg: '#FAFBFC' },
+  ];
+  const quadrants = qmeta.map(m => {
+    const items = quad(m.key[0], m.key[1]);
+    return {
+      title: m.title, action: m.action, empty: items.length === 0,
+      boxStyle: `background:${m.bg};border:1px solid #E3E5E8;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column`,
+      dotStyle: `width:9px;height:9px;border-radius:50%;background:${m.dot};display:inline-block`,
+      items
+    };
+  });
+
+  // rules
+  const ruleRows = S.rules.map(r => {
+    let next = '—', nextColor = '#666';
+    if (r.active) {
+      const dt = addDays(today, r.cycle === '매월' ? 12 : r.cycle === '매분기' ? 34 : (r.name.includes('연말') ? 174 : 203));
+      next = iso(dt).replace(/-/g, '.');
+    } else { next = '비활성'; nextColor = '#bbb'; }
+    return {
+      ...r, nextGen: next, nextColor,
+      toggleStyle: `width:42px;height:23px;border-radius:12px;border:none;cursor:pointer;position:relative;background:${r.active ? P : '#cfd2d6'};transition:background .15s`,
+      knobStyle: `position:absolute;top:2px;left:${r.active ? '21px' : '2px'};width:19px;height:19px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)`
+    };
+  });
+
+  // modal form
+  const f = S.form || {};
+  const formScore = f.name !== undefined ? (() => {
+    const dd = dday(today, f.due || iso(today));
+    let s = (f.imp || 2) * 2 + (f.urg || 2);
+    if ((f.progress || 0) < 100 && dd <= 3) s += 1;
+    return s;
+  })() : 0;
+  const btnStyle = (on) => `flex:1;height:34px;border:1px solid ${on ? P : '#E3E5E8'};background:${on ? '#FFF4EC' : '#fff'};color:${on ? P : '#888'};border-radius:7px;font-size:13px;font-weight:${on ? 700 : 500};cursor:pointer`;
+  const impBtns = [3, 2, 1].map(n => ({ value: n, label: IMP[n], style: btnStyle(f.imp === n) }));
+  const urgBtns = [3, 2, 1].map(n => ({ value: n, label: IMP[n], style: btnStyle(f.urg === n) }));
+
+  return {
+    todayLabel: `${today.getFullYear()}. ${App.util.pad(today.getMonth() + 1)}. ${App.util.pad(today.getDate())} (${['일', '월', '화', '수', '목', '금', '토'][today.getDay()]})`,
+    navItems, alerts: alertsCapped,
+    view: S.view,
+    weekDays, weekRangeLabel,
+    monthLabel, monthCells, dowHeaders,
+    top5, goalGauges, ongoingCards, ongoingCount: ongoing.length,
+    allCount: all.length, viewCount: rows.length, tableGroups, typeFilters, statusFilters, sortBy: S.sortBy,
+    quadrants,
+    ruleRows,
+    goalYear: 2026, goalDetails,
+    modalOpen: S.modalOpen, modalTitle: S.editingId ? '업무 수정' : '새 업무 등록', isEditing: !!S.editingId,
+    form: f, isRecurType: f.type === 'recurring', formScore,
+    goalOptions: S.goals.map(g => ({ id: g.id, name: g.name })),
+    impBtns, urgBtns,
+  };
+};

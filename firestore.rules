@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // This app has no login/auth, so these rules can't distinguish users.
+    // Anyone with the Firebase project config (visible in the client JS)
+    // can read/write these three collections. Add Firebase Authentication
+    // and scope these rules to request.auth before using this with data
+    // you don't want to be publicly writable.
+    match /tasks/{taskId} {
+      allow read, write: if true;
+    }
+    match /goals/{goalId} {
+      allow read, write: if true;
+    }
+    match /rules/{ruleId} {
+      allow read, write: if true;
+    }
+  }
+}
