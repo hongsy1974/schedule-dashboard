@@ -7,6 +7,9 @@ App.firebase = {
   updateTask: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   deleteTask: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   updateRule: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
+  addGoal: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
+  updateGoal: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
+  deleteGoal: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
 };
 
 App.today = (function () {
@@ -18,6 +21,7 @@ App.today = (function () {
 App.state = {
   view: 'home', weekOffset: 0, monthOffset: 0,
   modalOpen: false, editingId: null, form: null,
+  goalModalOpen: false, editingGoalId: null, goalForm: null,
   filterType: 'all', filterStatus: 'all', sortBy: 'score',
   goals: [],
   rules: [],

@@ -98,4 +98,48 @@ App.actions = {
     App.actions.rerender();
     if (active !== null) App.firebase.updateRule(id, { active }).catch(err => notifySaveError('반복 규칙', err));
   },
+
+  openNewGoal() {
+    App.state.goalModalOpen = true;
+    App.state.editingGoalId = null;
+    App.state.goalForm = { name: '', year: App.today.getFullYear() };
+    App.actions.rerender();
+  },
+
+  openEditGoal(id) {
+    const g = App.state.goals.find(x => x.id === id);
+    if (!g) return;
+    App.state.goalModalOpen = true;
+    App.state.editingGoalId = id;
+    App.state.goalForm = { name: g.name, year: g.year };
+    App.actions.rerender();
+  },
+
+  closeGoalModal() { App.state.goalModalOpen = false; App.actions.rerender(); },
+  setGoalForm(k, v) { App.state.goalForm = { ...App.state.goalForm, [k]: v }; App.actions.rerender(); },
+
+  saveGoal() {
+    const f = App.state.goalForm;
+    if (!f.name.trim()) return;
+    const payload = { name: f.name.trim(), year: f.year };
+    if (App.state.editingGoalId) {
+      const eid = App.state.editingGoalId;
+      App.state.goals = App.state.goals.map(g => g.id === eid ? { ...g, ...payload } : g);
+      App.state.goalModalOpen = false;
+      App.actions.rerender();
+      App.firebase.updateGoal(eid, payload).catch(err => notifySaveError('목표', err));
+    } else {
+      App.state.goalModalOpen = false;
+      App.actions.rerender();
+      App.firebase.addGoal(payload).catch(err => notifySaveError('목표 등록', err));
+    }
+  },
+
+  deleteGoal() {
+    const eid = App.state.editingGoalId;
+    App.state.goals = App.state.goals.filter(g => g.id !== eid);
+    App.state.goalModalOpen = false;
+    App.actions.rerender();
+    App.firebase.deleteGoal(eid).catch(err => notifySaveError('목표 삭제', err));
+  },
 };

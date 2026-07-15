@@ -47,6 +47,15 @@ window.App.firebase = {
   updateRule(id, payload) {
     return updateDoc(doc(db, 'rules', id), payload);
   },
+  addGoal(payload) {
+    return addDoc(collection(db, 'goals'), payload);
+  },
+  updateGoal(id, payload) {
+    return updateDoc(doc(db, 'goals', id), payload);
+  },
+  deleteGoal(id) {
+    return deleteDoc(doc(db, 'goals', id));
+  },
 };
 
 App.firebase.init();

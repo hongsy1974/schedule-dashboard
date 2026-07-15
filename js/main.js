@@ -55,6 +55,11 @@
       case 'toggleRule': App.actions.toggleRule(el.dataset.id); break;
       case 'setImp': App.actions.setForm('imp', +el.dataset.value); break;
       case 'setUrg': App.actions.setForm('urg', +el.dataset.value); break;
+      case 'openNewGoal': App.actions.openNewGoal(); break;
+      case 'openEditGoal': App.actions.openEditGoal(el.dataset.id); break;
+      case 'closeGoalModal': App.actions.closeGoalModal(); break;
+      case 'saveGoal': App.actions.saveGoal(); break;
+      case 'deleteGoal': App.actions.deleteGoal(); break;
     }
   });
 
@@ -82,6 +87,8 @@
     else if (action === 'fDue') App.actions.setForm('due', el.value);
     else if (action === 'fProg') App.actions.setForm('progress', +el.value);
     else if (action === 'fMemo') App.actions.setForm('memo', el.value);
+    else if (action === 'gfName') App.actions.setGoalForm('name', el.value);
+    else if (action === 'gfYear') App.actions.setGoalForm('year', +el.value);
   });
 
   rerender();

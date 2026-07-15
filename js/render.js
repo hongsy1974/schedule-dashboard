@@ -359,6 +359,7 @@
             <div style="font-size:12.5px;color:#888;margin-top:3px">실행 계획 ${g.taskCount}건 · 시간 경과율 ${g.timePct}%</div>
           </div>
           <div style="${g.tagStyle}">${g.tag}</div>
+          <button data-action="openEditGoal" data-id="${g.id}" style="border:1px solid #E3E5E8;background:#fff;color:#666;font-weight:700;font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer">수정</button>
         </div>
         <div style="padding:6px 20px 14px">
           ${g.tasks.map(t => `
@@ -374,11 +375,15 @@
         </div>
       </div>`).join('');
     return `
-    <div style="margin-bottom:16px">
-      <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">연간 목표 관리</h1>
-      <div style="font-size:12.5px;color:#888;margin-top:3px">${vm.goalYear}년 · 목표 달성률은 연결된 실행 계획 진행률의 평균으로 자동 집계</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">연간 목표 관리</h1>
+        <div style="font-size:12.5px;color:#888;margin-top:3px">${vm.goalYear}년 · 목표 달성률은 연결된 실행 계획 진행률의 평균으로 자동 집계</div>
+      </div>
+      <button data-action="openNewGoal" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 목표 추가</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px">${cards}</div>`;
+    <div style="display:flex;flex-direction:column;gap:14px">${cards}</div>
+    ${cards ? '' : `<div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;padding:40px;text-align:center;color:#aaa;font-size:13px">등록된 목표가 없습니다. "+ 새 목표 추가"로 첫 목표를 만들어보세요.</div>`}`;
   }
 
   const lblStyle = 'display:block;font-size:12px;font-weight:700;color:#666;margin-bottom:6px';
@@ -474,6 +479,37 @@
     </div>`;
   }
 
+  function renderGoalModal(vm) {
+    if (!vm.goalModalOpen) return '';
+    const f = vm.goalForm;
+    return `
+    <div style="position:fixed;inset:0;background:rgba(30,32,36,.5);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow:auto;animation:ovIn .12s ease">
+      <div style="width:420px;background:#fff;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mdIn .16s ease">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #EEF0F2">
+          <span style="font-size:16px;font-weight:900">${vm.goalModalTitle}</span>
+          <button data-action="closeGoalModal" style="border:none;background:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1">×</button>
+        </div>
+        <div style="padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+          <div>
+            <label style="${lblStyle}">목표명</label>
+            <input id="gf-name" data-action="gfName" value="${esc(f.name)}" placeholder="예: 업무 프로세스 표준화" style="${inpStyle}">
+          </div>
+          <div>
+            <label style="${lblStyle}">연도</label>
+            <input id="gf-year" type="number" data-action="gfYear" value="${f.year}" style="${inpStyle}">
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid #EEF0F2">
+          ${vm.isEditingGoal ? `<button data-action="deleteGoal" style="border:1px solid #F1C6C4;background:#fff;color:#E53935;font-weight:700;font-size:13px;padding:9px 16px;border-radius:7px;cursor:pointer">삭제</button>` : '<div></div>'}
+          <div style="display:flex;gap:10px;margin-left:auto">
+            <button data-action="closeGoalModal" style="border:1px solid #E3E5E8;background:#fff;color:#666;font-weight:700;font-size:13px;padding:9px 18px;border-radius:7px;cursor:pointer">취소</button>
+            <button data-action="saveGoal" style="border:none;background:#F37321;color:#fff;font-weight:700;font-size:13px;padding:9px 22px;border-radius:7px;cursor:pointer">저장</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
   const VIEW_RENDERERS = {
     home: renderHome,
     tasks: renderTasks,
@@ -490,6 +526,7 @@
       ${renderAlerts(vm)}
       <div style="padding:20px 28px 48px">${body}</div>
       ${renderModal(vm)}
+      ${renderGoalModal(vm)}
     </div>`;
   };
 })();

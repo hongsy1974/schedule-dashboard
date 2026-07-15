@@ -132,9 +132,13 @@ App.computeViewModel = function (state) {
   });
 
   const goalName = (gid) => { const g = S.goals.find(x => x.id === gid); return g ? g.name : null; };
+  const validGoalIds = new Set(S.goals.map(g => g.id));
+  // A task whose linked goal was since deleted falls back to "unlinked" here too,
+  // instead of silently disappearing from every group.
+  const effectiveGoalId = (t) => (t.goalId && validGoalIds.has(t.goalId)) ? t.goalId : '';
   const order = ['', ...S.goals.map(g => g.id)];
   const tableGroups = order.map(gid => {
-    const grp = rows.filter(t => (t.goalId || '') === gid);
+    const grp = rows.filter(t => effectiveGoalId(t) === gid);
     if (!grp.length) return null;
     const nm = goalName(gid);
     const avg = Math.round(grp.reduce((a, t) => a + t.progress, 0) / grp.length);
@@ -203,10 +207,12 @@ App.computeViewModel = function (state) {
     allCount: all.length, viewCount: rows.length, tableGroups, typeFilters, statusFilters, sortBy: S.sortBy,
     quadrants,
     ruleRows,
-    goalYear: 2026, goalDetails,
+    goalYear: today.getFullYear(), goalDetails,
     modalOpen: S.modalOpen, modalTitle: S.editingId ? '업무 수정' : '새 업무 등록', isEditing: !!S.editingId,
     form: f, isRecurType: f.type === 'recurring', formScore,
     goalOptions: S.goals.map(g => ({ id: g.id, name: g.name })),
     impBtns, urgBtns,
+    goalModalOpen: S.goalModalOpen, goalModalTitle: S.editingGoalId ? '목표 수정' : '새 목표 추가', isEditingGoal: !!S.editingGoalId,
+    goalForm: S.goalForm || {},
   };
 };
