@@ -25,7 +25,23 @@
     }
   }
 
+  // Tracks whether an IME composition (e.g. building a Korean syllable block) is
+  // in progress anywhere in the app. This has to be a global flag, not just a
+  // guard inside the 'input' handler below: Firestore's onSnapshot listeners
+  // (js/firebaseClient.js) call App.actions.rerender() directly whenever data
+  // changes remotely, on their own schedule, completely bypassing any per-input
+  // event handling. If that rerender lands mid-composition it recreates the
+  // <input> DOM node and aborts the composition, wiping out everything typed
+  // since the last commit. So rerender() itself has to refuse to run while
+  // composing=true; the browser always fires a final 'input' event right after
+  // compositionend, which reaches the normal setForm()->rerender() path once
+  // composing is back to false, so nothing is lost — it's just deferred.
+  let composing = false;
+  root.addEventListener('compositionstart', () => { composing = true; });
+  root.addEventListener('compositionend', () => { composing = false; });
+
   function rerender() {
+    if (composing) return;
     const focusInfo = captureFocus();
     root.innerHTML = render();
     restoreFocus(focusInfo);
