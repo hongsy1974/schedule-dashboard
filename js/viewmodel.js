@@ -84,10 +84,11 @@ App.computeViewModel = function (state) {
     });
   }
 
-  // top5
-  const top5 = [...active].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, 5).map((t, i) => ({
+  // top10
+  const TOP_N = 10;
+  const top10 = [...active].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, TOP_N).map((t, i) => ({
     ...t, rank: i + 1,
-    rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < 4 ? '1px solid #F2F3F5' : 'none'}`,
+    rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < TOP_N - 1 ? '1px solid #F2F3F5' : 'none'}`,
     rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
   }));
 
@@ -226,7 +227,7 @@ App.computeViewModel = function (state) {
     view: S.view,
     weekDays, weekRangeLabel,
     monthLabel, monthCells, dowHeaders,
-    top5, goalGauges, ongoingCards, ongoingCount: ongoing.length,
+    top10, goalGauges, ongoingCards, ongoingCount: ongoing.length,
     allCount: all.length, viewCount: rows.length, tableGroups, typeFilters, statusFilters, sortBy: S.sortBy,
     quadrants,
     ruleRows,

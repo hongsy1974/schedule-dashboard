@@ -95,10 +95,10 @@
     </div>`;
   }
 
-  function renderTop5(vm, stretch) {
+  function renderTop10(vm, stretch) {
     const cardExtra = stretch ? ';flex:1;display:flex;flex-direction:column;min-height:0' : '';
     const listExtra = stretch ? 'flex:1;overflow:auto' : '';
-    const rows = vm.top5.map(t => `
+    const rows = vm.top10.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="${t.rowStyle}">
         <div style="${t.rankStyle}">${t.rank}</div>
         <div style="flex:1;min-width:0">
@@ -117,7 +117,7 @@
     return `
     <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px${cardExtra}">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
-        <span style="font-size:15.5px;font-weight:700">우선순위 Top 5</span>
+        <span style="font-size:15.5px;font-weight:700">우선순위 Top 10</span>
         <span style="font-size:11.5px;color:#aaa">중요도×2 + 긴급도 + 마감가중</span>
       </div>
       <div style="${listExtra}">${rows}</div>
@@ -196,7 +196,7 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:16px">
         ${renderOngoing(vm)}
-        ${renderTop5(vm, true)}
+        ${renderTop10(vm, true)}
       </div>
     </div>`;
   }
