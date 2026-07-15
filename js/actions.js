@@ -63,10 +63,12 @@ App.actions = {
 
   deleteTask() {
     const eid = App.state.editingId;
+    const removed = App.state.tasks.find(t => t.id === eid);
     App.state.tasks = App.state.tasks.filter(t => t.id !== eid);
     App.state.modalOpen = false;
     App.actions.rerender();
     App.firebase.deleteTask(eid).catch(err => notifySaveError('업무 삭제', err));
+    if (removed && removed.googleEventId) App.googleCalendar.deleteEvent(removed.googleEventId);
   },
 
   setProgress(id, v) {
@@ -150,5 +152,44 @@ App.actions = {
     App.state.goalModalOpen = false;
     App.actions.rerender();
     App.firebase.deleteGoal(eid).catch(err => notifySaveError('목표 삭제', err));
+  },
+
+  async syncGoogleCalendar() {
+    if (App.state.googleSyncing) return;
+    if (!App.googleCalendar.isConnected()) {
+      try {
+        await App.googleCalendar.requestToken();
+      } catch (err) {
+        alert(`Google 캘린더 연동에 실패했습니다.\n(${err.message})`);
+        return;
+      }
+    }
+    App.state.googleSyncing = true;
+    App.actions.rerender();
+
+    let ok = 0, fail = 0;
+    for (const t of App.state.tasks) {
+      try {
+        const eventId = await App.googleCalendar.syncTask(t);
+        if (eventId !== t.googleEventId) {
+          t.googleEventId = eventId; // optimistic local update
+          App.firebase.updateTask(t.id, { googleEventId: eventId }).catch(() => {});
+        }
+        ok++;
+      } catch (e) {
+        fail++;
+      }
+    }
+
+    App.state.googleSyncing = false;
+    App.state.googleLastSyncAt = new Date();
+    App.actions.rerender();
+    alert(`Google 캘린더 동기화 완료: 성공 ${ok}건${fail ? `, 실패 ${fail}건` : ''}`);
+  },
+
+  disconnectGoogleCalendar() {
+    App.googleCalendar.disconnect();
+    App.state.googleLastSyncAt = null;
+    App.actions.rerender();
   },
 };

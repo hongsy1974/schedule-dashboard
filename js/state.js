@@ -26,4 +26,5 @@ App.state = {
   goals: [],
   rules: [],
   tasks: [],
+  googleSyncing: false, googleLastSyncAt: null,
 };

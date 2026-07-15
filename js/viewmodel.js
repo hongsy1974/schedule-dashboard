@@ -231,6 +231,11 @@ App.computeViewModel = function (state) {
     view: S.view,
     weekDays, weekRangeLabel,
     monthLabel, monthCells, dowHeaders,
+    googleConnected: App.googleCalendar ? App.googleCalendar.isConnected() : false,
+    googleSyncing: S.googleSyncing,
+    googleLastSyncLabel: S.googleLastSyncAt
+      ? `${App.util.pad(S.googleLastSyncAt.getHours())}:${App.util.pad(S.googleLastSyncAt.getMinutes())}`
+      : null,
     top10, goalGauges, ongoingCards, ongoingCount: ongoing.length,
     allCount: all.length, viewCount: rows.length, tableGroups, typeFilters, statusFilters, sortBy: S.sortBy,
     quadrants,

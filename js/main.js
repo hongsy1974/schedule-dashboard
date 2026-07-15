@@ -76,6 +76,8 @@
       case 'closeGoalModal': App.actions.closeGoalModal(); break;
       case 'saveGoal': App.actions.saveGoal(); break;
       case 'deleteGoal': App.actions.deleteGoal(); break;
+      case 'syncGoogle': App.actions.syncGoogleCalendar(); break;
+      case 'disconnectGoogle': App.actions.disconnectGoogleCalendar(); break;
     }
   });
 

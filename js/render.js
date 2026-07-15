@@ -1,5 +1,6 @@
 (function () {
   const esc = App.util.esc;
+  const P = App.const.P;
 
   function renderHeader(vm) {
     const nav = vm.navItems.map(n =>
@@ -86,6 +87,13 @@
           <button data-action="prevMonth" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">‹</button>
           <button data-action="thisMonth" style="height:26px;padding:0 10px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#555;font-size:11.5px">이번 달</button>
           <button data-action="nextMonth" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">›</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 18px;border-bottom:1px solid #EEF0F2;background:#FAFBFC">
+        <span style="font-size:11.5px;color:#888">${vm.googleConnected ? (vm.googleLastSyncLabel ? `마지막 동기화 ${vm.googleLastSyncLabel}` : '연동됨 · 아직 동기화 전') : 'Google 캘린더와 연동하면 이 달력 내용을 내보낼 수 있어요'}</span>
+        <div style="display:flex;gap:6px">
+          <button data-action="syncGoogle" ${vm.googleSyncing ? 'disabled' : ''} style="height:26px;padding:0 12px;border:1px solid ${P};background:${vm.googleSyncing ? '#f5f5f5' : '#fff'};color:${P};border-radius:6px;cursor:${vm.googleSyncing ? 'default' : 'pointer'};font-size:11.5px;font-weight:700">${vm.googleSyncing ? '동기화 중…' : (vm.googleConnected ? '지금 동기화' : 'Google 캘린더 연동')}</button>
+          ${vm.googleConnected ? `<button data-action="disconnectGoogle" style="height:26px;padding:0 10px;border:1px solid #E3E5E8;background:#fff;color:#888;border-radius:6px;cursor:pointer;font-size:11.5px">연동 해제</button>` : ''}
         </div>
       </div>
       <div style="padding:12px 14px 16px">
