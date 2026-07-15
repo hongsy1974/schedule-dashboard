@@ -279,8 +279,11 @@
   }
 
   function renderMatrix(vm) {
-    const boxes = vm.quadrants.map(q => `
-      <div style="${q.boxStyle}">
+    // Explicit grid-column/grid-row placement (rather than relying on document-order
+    // auto-flow) so the 2x2 quadrants always land under the right axis labels.
+    const QUAD_POS = ['grid-column:2;grid-row:2', 'grid-column:3;grid-row:2', 'grid-column:2;grid-row:3', 'grid-column:3;grid-row:3'];
+    const boxes = vm.quadrants.map((q, i) => `
+      <div style="${QUAD_POS[i]};${q.boxStyle}">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <div style="display:flex;align-items:center;gap:8px"><span style="${q.dotStyle}"></span><span style="font-size:14px;font-weight:900">${q.title}</span></div>
           <span style="font-size:11.5px;color:#888;font-weight:700">${q.action}</span>
@@ -302,14 +305,11 @@
       <div style="font-size:12.5px;color:#888;margin-top:3px">중요도 × 긴급도 4분면 · 완료 업무 제외</div>
     </div>
     <div style="display:grid;grid-template-columns:34px 1fr 1fr;grid-template-rows:34px 1fr 1fr;gap:10px;height:660px">
-      <div></div>
-      <div style="display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 높음 →</div>
-      <div style="display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 낮음</div>
-      <div style="display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#888">중요도 높음 ↑</div>
+      <div style="grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 높음 →</div>
+      <div style="grid-column:3;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 낮음</div>
+      <div style="grid-column:1;grid-row:2;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#888">중요도 높음 ↑</div>
+      <div style="grid-column:1;grid-row:3;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#bbb">중요도 낮음</div>
       ${boxes}
-      <div></div>
-      <div style="display:flex;align-items:flex-start;justify-content:center;font-size:12.5px;font-weight:700;color:#bbb">중요도 낮음</div>
-      <div></div>
     </div>`;
   }
 
