@@ -35,6 +35,11 @@ App.actions = {
 
   closeModal() { App.state.modalOpen = false; App.actions.rerender(); },
   setForm(k, v) { App.state.form = { ...App.state.form, [k]: v }; App.actions.rerender(); },
+  // Same as setForm, but skips the rerender. Used for freeform text fields
+  // (업무명/설명/메모) where nothing else on screen needs to react live to
+  // what's being typed — so there's no reason to ever recreate that <input>
+  // mid-keystroke, which is what made Korean IME composition fragile.
+  setFormQuiet(k, v) { App.state.form = { ...App.state.form, [k]: v }; },
 
   saveTask() {
     const f = App.state.form;
@@ -117,6 +122,7 @@ App.actions = {
 
   closeGoalModal() { App.state.goalModalOpen = false; App.actions.rerender(); },
   setGoalForm(k, v) { App.state.goalForm = { ...App.state.goalForm, [k]: v }; App.actions.rerender(); },
+  setGoalFormQuiet(k, v) { App.state.goalForm = { ...App.state.goalForm, [k]: v }; },
 
   saveGoal() {
     const f = App.state.goalForm;

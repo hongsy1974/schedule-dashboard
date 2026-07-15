@@ -91,19 +91,29 @@
   });
 
   root.addEventListener('input', (e) => {
-    // Skip mid-composition keystrokes (e.g. Korean IME building a syllable block).
-    // Re-rendering the whole DOM on every jamo would recreate the <input> element
-    // and abort the browser's composition session, splitting the syllable apart.
-    if (e.isComposing) return;
     const el = e.target, action = el.dataset.action;
     if (!action) return;
-    if (action === 'fName') App.actions.setForm('name', el.value);
-    else if (action === 'fDesc') App.actions.setForm('desc', el.value);
-    else if (action === 'fStart') App.actions.setForm('start', el.value);
+
+    // Freeform text fields: sync straight into state without forcing a rerender.
+    // Relying on isComposing to detect "midway through a Korean/Japanese/Chinese
+    // IME composition" turned out not to be reliable enough across browsers —
+    // the last input event of a composition doesn't always flip isComposing back
+    // to false before compositionend fires, so gating on it could silently drop
+    // the tail of what was typed. Since nothing else on screen needs to reflect
+    // these fields live, the simplest robust fix is to never rerender from them
+    // at all: the DOM node then simply never gets recreated mid-keystroke, IME
+    // or not, and state stays in sync in the background for when saveTask() reads it.
+    if (action === 'fName') return App.actions.setFormQuiet('name', el.value);
+    if (action === 'fDesc') return App.actions.setFormQuiet('desc', el.value);
+    if (action === 'fMemo') return App.actions.setFormQuiet('memo', el.value);
+    if (action === 'gfName') return App.actions.setGoalFormQuiet('name', el.value);
+
+    // Everything below is a date/number/range input, never IME-composed, so a
+    // normal rerender (needed to keep the live 예상 우선순위 점수 in sync) is safe.
+    if (e.isComposing) return;
+    if (action === 'fStart') App.actions.setForm('start', el.value);
     else if (action === 'fDue') App.actions.setForm('due', el.value);
     else if (action === 'fProg') App.actions.setForm('progress', +el.value);
-    else if (action === 'fMemo') App.actions.setForm('memo', el.value);
-    else if (action === 'gfName') App.actions.setGoalForm('name', el.value);
     else if (action === 'gfYear') App.actions.setGoalForm('year', +el.value);
   });
 
