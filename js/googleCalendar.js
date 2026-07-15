@@ -1,8 +1,7 @@
 (function () {
-  // Filled in once a Google Cloud OAuth Client ID is created for this site.
   // Not a secret — it's meant to be public in client-side code (same as the
   // Firebase config), it only identifies which app is requesting access.
-  const CLIENT_ID = 'REPLACE_WITH_YOUR_CLIENT_ID.apps.googleusercontent.com';
+  const CLIENT_ID = '185546583557-0mricj143lcpa75vlqnurse5bf650cli.apps.googleusercontent.com';
   const SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 
   let tokenClient = null;
