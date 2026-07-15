@@ -92,7 +92,7 @@ App.computeViewModel = function (state) {
   }));
 
   // ongoing cards
-  const ongoing = active.filter(t => t.type === 'ongoing' || t.type === 'goal');
+  const ongoing = active.filter(t => t.type === 'ongoing' || t.type === 'goal' || t.type === 'simple');
   const ongoingCards = [...ongoing].sort((a, b) => dday(today, a.due) - dday(today, b.due)).map(t => ({
     ...t, prioLabel: t.score + '점',
     prioBadge: `background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`
@@ -146,7 +146,7 @@ App.computeViewModel = function (state) {
     };
   }).filter(Boolean);
 
-  const typeFilters = [['all', '전체'], ['recurring', '반복'], ['ongoing', '지속'], ['goal', '목표']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
+  const typeFilters = [['all', '전체'], ['recurring', '반복'], ['ongoing', '지속'], ['goal', '목표'], ['simple', '단순']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
   const statusFilters = [['all', '전체'], ['예정', '예정'], ['진행중', '진행중'], ['완료', '완료'], ['지연', '지연']].map(([v, l]) => ({ value: v, label: l, active: S.filterStatus === v }));
 
   // matrix

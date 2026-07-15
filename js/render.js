@@ -414,6 +414,7 @@
               <option value="recurring" ${f.type === 'recurring' ? 'selected' : ''}>반복 일정</option>
               <option value="ongoing" ${f.type === 'ongoing' ? 'selected' : ''}>지속 업무</option>
               <option value="goal" ${f.type === 'goal' ? 'selected' : ''}>목표 과제</option>
+              <option value="simple" ${f.type === 'simple' ? 'selected' : ''}>단순 업무</option>
             </select>
           </div>
           <div>

@@ -9,7 +9,8 @@ App.const = {
   TYPE: {
     recurring: { label: '반복', color: '#3f6fb5' },
     ongoing: { label: '지속', color: '#7a5db5' },
-    goal: { label: '목표', color: '#2f9e78' }
+    goal: { label: '목표', color: '#2f9e78' },
+    simple: { label: '단순', color: '#6b7280' }
   }
 };
 
