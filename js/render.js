@@ -420,6 +420,7 @@
               <option value="ongoing" ${f.type === 'ongoing' ? 'selected' : ''}>지속 업무</option>
               <option value="goal" ${f.type === 'goal' ? 'selected' : ''}>목표 과제</option>
               <option value="simple" ${f.type === 'simple' ? 'selected' : ''}>단순 업무</option>
+              <option value="personal" ${f.type === 'personal' ? 'selected' : ''}>개인 일정</option>
             </select>
           </div>
           <div>

@@ -23,6 +23,10 @@ App.computeViewModel = function (state) {
 
   const all = S.tasks.map(decorate);
   const active = all.filter(t => t.status !== '완료');
+  // 개인 일정 is excluded from views that specifically rank/triage *work*
+  // (우선순위 Top10, 아이젠하워 매트릭스) — it still shows normally in the
+  // calendars, 업무 목록, and alerts.
+  const workActive = active.filter(t => t.type !== 'personal');
 
   // nav
   const navDefs = [['home', '홈'], ['tasks', '업무 목록'], ['matrix', '매트릭스'], ['recurring', '반복 일정'], ['goals', '연간 목표']];
@@ -86,7 +90,7 @@ App.computeViewModel = function (state) {
 
   // top10
   const TOP_N = 10;
-  const top10 = [...active].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, TOP_N).map((t, i) => ({
+  const top10 = [...workActive].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, TOP_N).map((t, i) => ({
     ...t, rank: i + 1,
     rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < TOP_N - 1 ? '1px solid #F2F3F5' : 'none'}`,
     rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
@@ -167,11 +171,11 @@ App.computeViewModel = function (state) {
     };
   }).filter(Boolean);
 
-  const typeFilters = [['all', '전체'], ['recurring', '반복'], ['ongoing', '지속'], ['goal', '목표'], ['simple', '단순']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
+  const typeFilters = [['all', '전체'], ['recurring', '반복'], ['ongoing', '지속'], ['goal', '목표'], ['simple', '단순'], ['personal', '개인']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
   const statusFilters = [['all', '전체'], ['예정', '예정'], ['진행중', '진행중'], ['완료', '완료'], ['지연', '지연']].map(([v, l]) => ({ value: v, label: l, active: S.filterStatus === v }));
 
   // matrix
-  const quad = (hi, hu) => active.filter(t => (t.imp >= 2) === hi && (t.urg >= 2) === hu).sort((a, b) => b.score - a.score);
+  const quad = (hi, hu) => workActive.filter(t => (t.imp >= 2) === hi && (t.urg >= 2) === hu).sort((a, b) => b.score - a.score);
   const qmeta = [
     { key: [true, true], title: '즉시 처리', action: 'DO', dot: RED, bg: '#FFF6F5' },
     { key: [true, false], title: '계획 수립', action: 'PLAN', dot: P, bg: '#FFFAF5' },
