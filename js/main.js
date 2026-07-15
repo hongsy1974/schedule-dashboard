@@ -70,6 +70,10 @@
   });
 
   root.addEventListener('input', (e) => {
+    // Skip mid-composition keystrokes (e.g. Korean IME building a syllable block).
+    // Re-rendering the whole DOM on every jamo would recreate the <input> element
+    // and abort the browser's composition session, splitting the syllable apart.
+    if (e.isComposing) return;
     const el = e.target, action = el.dataset.action;
     if (!action) return;
     if (action === 'fName') App.actions.setForm('name', el.value);
