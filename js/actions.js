@@ -20,7 +20,7 @@ App.actions = {
     const today = App.today, iso = App.util.iso, addDays = App.util.addDays;
     App.state.modalOpen = true;
     App.state.editingId = null;
-    App.state.form = { name: '', desc: '', type: 'ongoing', start: iso(today), due: iso(addDays(today, 7)), imp: 2, urg: 2, recur: '매월', goalId: '', progress: 0, memo: '' };
+    App.state.form = { name: '', desc: '', type: 'ongoing', start: iso(today), due: iso(addDays(today, 7)), imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memo: '' };
     App.actions.rerender();
   },
 
@@ -29,7 +29,7 @@ App.actions = {
   openNewOnDate(dateIso) {
     App.state.modalOpen = true;
     App.state.editingId = null;
-    App.state.form = { name: '', desc: '', type: 'ongoing', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '매월', goalId: '', progress: 0, memo: '' };
+    App.state.form = { name: '', desc: '', type: 'ongoing', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memo: '' };
     App.actions.rerender();
   },
 
@@ -38,7 +38,10 @@ App.actions = {
     if (!t) return;
     App.state.modalOpen = true;
     App.state.editingId = id;
-    App.state.form = { name: t.name, desc: t.desc || '', type: t.type, start: t.start, due: t.due, imp: t.imp, urg: t.urg, recur: t.recur || '매월', goalId: t.goalId || '', progress: t.progress, memo: t.memo || '' };
+    // Legacy records may still have type:'recurring' — fold into 지속 업무 + recur here too.
+    const type = t.type === 'recurring' ? 'ongoing' : t.type;
+    const recur = t.type === 'recurring' ? (t.recur || '매월') : (t.recur || '');
+    App.state.form = { name: t.name, desc: t.desc || '', type, start: t.start, due: t.due, imp: t.imp, urg: t.urg, recur, goalId: t.goalId || '', progress: t.progress, memo: t.memo || '' };
     App.actions.rerender();
   },
 

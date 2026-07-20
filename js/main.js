@@ -90,7 +90,8 @@
     else if (action === 'setRowStatus') App.actions.setStatus(el.dataset.id, el.value);
     else if (action === 'fType') App.actions.setForm('type', el.value);
     else if (action === 'fGoal') App.actions.setForm('goalId', el.value);
-    else if (action === 'fRecur') App.actions.setForm('recur', el.value);
+    else if (action === 'fIsRecur') App.actions.setForm('recur', el.checked ? '매월' : '');
+    else if (action === 'fRecurCycle') App.actions.setForm('recur', el.value);
     else if (action === 'gfMetric') App.actions.setGoalForm('metricType', el.value);
   });
 

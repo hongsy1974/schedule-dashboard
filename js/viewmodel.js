@@ -6,9 +6,16 @@ App.computeViewModel = function (state) {
   const S = state;
 
   const decorate = (t) => {
-    const tb = typeBadge(t.type), dv = ddayView(today, t);
+    // Legacy data: 반복(recurring) used to be its own 유형. It's now an independent
+    // flag (t.recur) layered onto a real type, so old records get folded into
+    // 지속 업무 + recur set here for every display purpose; saving the task through
+    // the modal persists the migration.
+    const effType = t.type === 'recurring' ? 'ongoing' : t.type;
+    const effRecur = t.type === 'recurring' ? (t.recur || '매월') : t.recur;
+    const tb = typeBadge(effType), dv = ddayView(today, t);
     return {
       ...t,
+      type: effType, recur: effRecur,
       score: score(today, t),
       status: statusOf(today, t),
       stalled: stalled(today, t),
@@ -34,7 +41,7 @@ App.computeViewModel = function (state) {
 
   // alerts
   const overdue = active.filter(t => t.status === '지연');
-  const soon = active.filter(t => t.type === 'recurring' && dday(today, t.due) >= 0 && dday(today, t.due) <= 5);
+  const soon = active.filter(t => t.recur && dday(today, t.due) >= 0 && dday(today, t.due) <= 5);
   const alerts = [];
   overdue.slice(0, 2).forEach(t => alerts.push(`${t.name} 마감 경과 (지연)`));
   soon.slice(0, 2).forEach(t => alerts.push(`반복 일정 「${t.name}」 ${t.ddayLabel}`));
@@ -174,7 +181,7 @@ App.computeViewModel = function (state) {
     };
   }).filter(Boolean);
 
-  const typeFilters = [['all', '전체'], ['recurring', '반복'], ['ongoing', '지속'], ['goal', '목표'], ['simple', '단순'], ['personal', '개인']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
+  const typeFilters = [['all', '전체'], ['ongoing', '지속'], ['goal', '목표'], ['simple', '단순'], ['personal', '개인']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
   const statusFilters = [['all', '전체'], ['예정', '예정'], ['진행중', '진행중'], ['완료', '완료'], ['지연', '지연']].map(([v, l]) => ({ value: v, label: l, active: S.filterStatus === v }));
 
   // matrix
@@ -245,7 +252,7 @@ App.computeViewModel = function (state) {
     ruleRows,
     goalYear: today.getFullYear(), goalDetails,
     modalOpen: S.modalOpen, modalTitle: S.editingId ? '업무 수정' : '새 업무 등록', isEditing: !!S.editingId,
-    form: f, isRecurType: f.type === 'recurring', formScore,
+    form: f, isRecurringTask: !!f.recur, formScore,
     goalOptions: S.goals.map(g => ({ id: g.id, name: g.name })),
     impBtns, urgBtns,
     goalModalOpen: S.goalModalOpen, goalModalTitle: S.editingGoalId ? '목표 수정' : '새 목표 추가', isEditingGoal: !!S.editingGoalId,

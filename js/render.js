@@ -38,6 +38,13 @@
     return `<div data-action="openEdit" data-id="${t.id}" title="${esc(t.name)}" style="${t.style}">${esc(t.name)}</div>`;
   }
 
+  // Recurring is no longer its own 유형 — it's an independent flag (t.recur holds
+  // the cycle string when on) layered onto whichever real type the task has, so it
+  // gets its own small indicator wherever the type badge is shown.
+  function recurBadge(t) {
+    return t.recur ? `<span style="background:#EEF2FA;color:#3f6fb5;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;flex:none">반복</span>` : '';
+  }
+
   function renderWeekly(vm) {
     const days = vm.weekDays.map(d => `
       <div data-action="openNewOnDate" data-date="${d.dateIso}" style="${d.colStyle}">
@@ -112,7 +119,7 @@
         <div style="flex:1;min-width:0">
           <div style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</div>
           <div style="display:flex;align-items:center;gap:7px;margin-top:3px">
-            <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+            <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}
             <span style="font-size:11.5px;color:#888">중요 ${t.impLabel} · 긴급 ${t.urgLabel}</span>
             <span style="${t.ddayStyle}">${t.ddayLabel}</span>
           </div>
@@ -138,7 +145,7 @@
     const cards = vm.personalCards.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:8px 13px;cursor:pointer">
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+          <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}
           <span style="font-size:13.5px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
           ${t.stalled ? `<span style="background:#FBECEC;color:#E53935;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px">정체</span>` : ''}
           <span style="${t.ddayStyle}">${t.ddayLabel}</span>
@@ -259,6 +266,7 @@
             <div style="padding:11px 14px;display:flex;align-items:center;gap:8px;min-width:0">
               <span data-action="openEdit" data-id="${t.id}" style="font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
               ${t.stalled ? `<span style="background:#FBECEC;color:#E53935;font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;flex:none">정체</span>` : ''}
+              ${recurBadge(t)}
             </div>
             <div style="padding:11px 8px"><span style="${t.typeBadgeStyle}">${t.typeLabel}</span></div>
             <div style="padding:11px 8px;color:#888">${t.startLabel}</div>
@@ -333,7 +341,7 @@
         <div style="display:flex;flex-direction:column;gap:6px;overflow:auto;flex:1">
           ${q.items.map(t => `
             <div data-action="openEdit" data-id="${t.id}" style="background:#fff;border:1px solid #EEF0F2;border-radius:6px;padding:8px 11px;cursor:pointer;display:flex;align-items:center;gap:8px">
-              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}
               <span style="font-size:12.5px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
               <span style="${t.ddayStyle}">${t.ddayLabel}</span>
               <span style="font-size:12px;font-weight:900;color:#F37321">${t.score}점</span>
@@ -406,7 +414,7 @@
         <div style="padding:6px 20px 14px">
           ${g.tasks.map(t => `
             <div data-action="openEdit" data-id="${t.id}" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F5F6F7;cursor:pointer">
-              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}
               <span style="font-size:13px;font-weight:500;flex:none;width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
               <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
                 <div style="height:100%;border-radius:4px;background:${t.barColor};width: ${t.progress}%"></div>
@@ -458,7 +466,6 @@
           <div>
             <label style="${lblStyle}">유형</label>
             <select id="f-type" data-action="fType" style="${selStyle}">
-              <option value="recurring" ${f.type === 'recurring' ? 'selected' : ''}>반복 일정</option>
               <option value="ongoing" ${f.type === 'ongoing' ? 'selected' : ''}>지속 업무</option>
               <option value="goal" ${f.type === 'goal' ? 'selected' : ''}>목표 과제</option>
               <option value="simple" ${f.type === 'simple' ? 'selected' : ''}>단순 업무</option>
@@ -488,13 +495,21 @@
             <label style="${lblStyle}">긴급도</label>
             <div style="display:flex;gap:6px">${urgBtns}</div>
           </div>
-          ${vm.isRecurType ? `
+          <div style="grid-column:1/3;display:flex;align-items:center;gap:10px;padding:2px 0">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:#444">
+              <input type="checkbox" id="f-isrecur" data-action="fIsRecur" ${vm.isRecurringTask ? 'checked' : ''} style="width:16px;height:16px;accent-color:#F37321;cursor:pointer">
+              반복 업무로 등록
+            </label>
+          </div>
+          ${vm.isRecurringTask ? `
           <div style="grid-column:1/3">
-            <label style="${lblStyle}">반복 규칙</label>
-            <select id="f-recur" data-action="fRecur" style="${selStyle}">
-              <option value="매년" ${f.recur === '매년' ? 'selected' : ''}>매년</option>
-              <option value="매분기" ${f.recur === '매분기' ? 'selected' : ''}>매분기</option>
+            <label style="${lblStyle}">반복 주기</label>
+            <select id="f-recur-cycle" data-action="fRecurCycle" style="${selStyle}">
               <option value="매월" ${f.recur === '매월' ? 'selected' : ''}>매월</option>
+              <option value="매분기" ${f.recur === '매분기' ? 'selected' : ''}>매분기</option>
+              <option value="매년" ${f.recur === '매년' ? 'selected' : ''}>매년</option>
+              <option value="2년" ${f.recur === '2년' ? 'selected' : ''}>2년</option>
+              <option value="3년" ${f.recur === '3년' ? 'selected' : ''}>3년</option>
             </select>
           </div>` : ''}
           <div style="grid-column:1/3">
