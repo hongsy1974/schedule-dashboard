@@ -91,7 +91,7 @@ App.computeViewModel = function (state) {
     const c = statusOf(today, t) === '지연' ? RED : P;
     weekBars.push({
       id: t.id, label: `${t.name}(${dateRangeLabel(t)})`,
-      style: `grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};font-size:10px;font-weight:700;line-height:20px;padding:0 6px;border-radius:4px;background:${c};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;align-self:center`
+      style: `grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};font-size:10px;font-weight:700;line-height:18px;padding:0 6px;margin:2px 3px;border-radius:4px;background:${c};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;align-self:center`
     });
   });
   const droppedByDue = {};

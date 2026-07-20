@@ -78,9 +78,11 @@
           <button data-action="nextWeek" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">›</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:${cols}">${heads}</div>
-      <div style="display:grid;grid-template-columns:${cols}">${items}</div>
-      <div style="display:grid;grid-template-columns:${cols};grid-auto-rows:${laneRowH}px;position:relative">${laneBg}${bars}</div>
+      <div style="padding:0 8px 10px">
+        <div style="display:grid;grid-template-columns:${cols}">${heads}</div>
+        <div style="display:grid;grid-template-columns:${cols}">${items}</div>
+        <div style="display:grid;grid-template-columns:${cols};grid-auto-rows:${laneRowH}px;position:relative">${laneBg}${bars}</div>
+      </div>
     </div>`;
   }
 
