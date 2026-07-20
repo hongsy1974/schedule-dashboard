@@ -31,7 +31,7 @@ App.logic = {
   dday(today, due) { return Math.round((App.util.parse(due) - today) / 86400000); },
 
   score(today, t) {
-    let s = t.imp * 2 + t.urg;
+    let s = t.urg * 2 + t.imp;
     const dd = App.logic.dday(today, t.due);
     if (t.rawStatus !== '완료' && dd <= 3) s += 1;
     return s;

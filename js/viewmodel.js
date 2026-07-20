@@ -31,7 +31,7 @@ App.computeViewModel = function (state) {
   const all = S.tasks.map(decorate);
   const active = all.filter(t => t.status !== '완료');
   // 개인 일정 is excluded from views that specifically rank/triage *work*
-  // (우선순위 Top10, 아이젠하워 매트릭스) — it still shows normally in the
+  // (해야할 일, 아이젠하워 매트릭스) — it still shows normally in the
   // calendars, 업무 목록, and alerts.
   const workActive = active.filter(t => t.type !== 'personal');
 
@@ -141,11 +141,11 @@ App.computeViewModel = function (state) {
     });
   }
 
-  // top5
-  const TOP_N = 5;
-  const top5 = [...workActive].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, TOP_N).map((t, i) => ({
+  // 해야할 일 — every outstanding work item, ranked by score (no cap; the card
+  // has a fixed frame and scrolls internally instead of growing with the list)
+  const todoList = [...workActive].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).map((t, i, arr) => ({
     ...t, rank: i + 1,
-    rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < TOP_N - 1 ? '1px solid #F2F3F5' : 'none'}`,
+    rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < arr.length - 1 ? '1px solid #F2F3F5' : 'none'}`,
     rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
   }));
 
@@ -266,7 +266,7 @@ App.computeViewModel = function (state) {
   const f = S.form || {};
   const formScore = f.name !== undefined ? (() => {
     const dd = dday(today, f.due || iso(today));
-    let s = (f.imp || 2) * 2 + (f.urg || 2);
+    let s = (f.urg || 2) * 2 + (f.imp || 2);
     if ((f.progress || 0) < 100 && dd <= 3) s += 1;
     return s;
   })() : 0;
@@ -292,7 +292,7 @@ App.computeViewModel = function (state) {
     googleLastSyncLabel: S.googleLastSyncAt
       ? `${App.util.pad(S.googleLastSyncAt.getHours())}:${App.util.pad(S.googleLastSyncAt.getMinutes())}`
       : null,
-    top5, goalGauges, ongoingCards, ongoingCount: ongoing.length, personalCards,
+    todoList, goalGauges, ongoingCards, ongoingCount: ongoing.length, personalCards,
     allCount: all.length, viewCount: rows.length, tableGroups, typeFilters, statusFilters, sortBy: S.sortBy,
     quadrants,
     ruleRows,

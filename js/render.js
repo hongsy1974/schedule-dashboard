@@ -123,10 +123,12 @@
     </div>`;
   }
 
-  function renderTop5(vm, stretch) {
-    const cardExtra = stretch ? ';flex:1;display:flex;flex-direction:column;min-height:0' : '';
-    const listExtra = stretch ? 'flex:1;overflow:auto' : '';
-    const rows = vm.top5.map(t => `
+  // "해야할 일" keeps a fixed frame height regardless of how many outstanding
+  // items there are — the list scrolls inside it instead of growing the card.
+  const TODO_LIST_HEIGHT = 300;
+
+  function renderTodo(vm) {
+    const rows = vm.todoList.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="${t.rowStyle}">
         <div style="${t.rankStyle}">${t.rank}</div>
         <div style="flex:1;min-width:0">
@@ -143,12 +145,12 @@
         </div>
       </div>`).join('');
     return `
-    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px${cardExtra}">
+    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
-        <span style="font-size:15.5px;font-weight:700">우선순위 Top 5</span>
-        <span style="font-size:11.5px;color:#aaa">중요도×2 + 긴급도 + 마감가중</span>
+        <span style="font-size:15.5px;font-weight:700">해야할 일</span>
+        <span style="font-size:11.5px;color:#aaa">긴급도×2 + 중요도 + 마감가중</span>
       </div>
-      <div style="${listExtra}">${rows}</div>
+      <div style="height:${TODO_LIST_HEIGHT}px;overflow:auto">${rows}</div>
     </div>`;
   }
 
@@ -211,7 +213,9 @@
     </div>`;
   }
 
-  function renderOngoing(vm) {
+  function renderOngoing(vm, stretch) {
+    const cardExtra = stretch ? ';flex:1;display:flex;flex-direction:column;min-height:0' : '';
+    const listExtra = stretch ? 'flex:1;overflow:auto' : 'max-height:290px;overflow:auto';
     const cards = vm.ongoingCards.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:8px 13px;cursor:pointer">
         <div style="display:flex;align-items:center;gap:8px">
@@ -228,7 +232,7 @@
         </div>
       </div>`).join('');
     return `
-    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
+    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px${cardExtra}">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
         <div style="display:flex;align-items:baseline;gap:9px">
           <span style="font-size:15.5px;font-weight:700">지속 업무 진행률</span>
@@ -236,7 +240,7 @@
         </div>
         <button data-action="setView" data-value="tasks" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
       </div>
-      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;max-height:290px;overflow:auto">${cards}</div>
+      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;${listExtra}">${cards}</div>
     </div>`;
   }
 
@@ -256,9 +260,9 @@
         ${renderMonthly(vm)}
       </div>
       <div style="display:flex;flex-direction:column;gap:16px">
-        ${renderOngoing(vm)}
-        ${renderTop5(vm)}
-        ${renderPersonal(vm, true)}
+        ${renderTodo(vm)}
+        ${renderPersonal(vm)}
+        ${renderOngoing(vm, true)}
       </div>
     </div>`;
   }
@@ -537,7 +541,7 @@
           <div style="grid-column:1/3;background:#FFF7F1;border:1px solid #FADFC9;border-radius:7px;padding:11px 14px;display:flex;align-items:center;gap:10px">
             <span style="font-size:12.5px;color:#7a4a24;font-weight:700">예상 우선순위 점수</span>
             <span style="font-size:20px;font-weight:900;color:#F37321">${vm.formScore}</span>
-            <span style="font-size:11.5px;color:#a06a3f">= 중요도×2 + 긴급도 + 마감 가중치</span>
+            <span style="font-size:11.5px;color:#a06a3f">= 긴급도×2 + 중요도 + 마감 가중치</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid #EEF0F2">
