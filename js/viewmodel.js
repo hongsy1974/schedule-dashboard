@@ -56,9 +56,9 @@ App.computeViewModel = function (state) {
   S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
   // Completed tasks are cleared off 주간 일정 so the week view stays focused on
   // what's still outstanding — they still show up everywhere else (업무 목록,
-  // 월간 일정, etc), which is why this filtered map is kept separate from byDue.
-  const weekByDue = {};
-  S.tasks.filter(t => statusOf(today, t) !== '완료').forEach(t => { (weekByDue[t.due] = weekByDue[t.due] || []).push(t); });
+  // 월간 일정, etc), which is why this uses its own filtered task list instead
+  // of the byDue map above.
+  const weekActiveTasks = S.tasks.filter(t => statusOf(today, t) !== '완료');
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
@@ -97,7 +97,11 @@ App.computeViewModel = function (state) {
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const weekend = i >= 5;
-    const dayTasks = (weekByDue[key] || []).filter(t => t.start === t.due || durationDays(t) < LONG_DURATION_DAYS);
+    // Single-day tasks show on their one day; short multi-day tasks (under the
+    // bar threshold) repeat in every day cell they cover so the span still
+    // reads as connected without needing a dedicated lane.
+    const dayTasks = weekActiveTasks.filter(t => t.start === t.due ? t.due === key
+      : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key));
     const items = dayTasks.slice(0, 4).map(t => {
       const c = statusOf(today, t) === '지연' ? RED : P;
       return { id: t.id, name: `${t.name}(${dateRangeLabel(t)})`, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
