@@ -54,6 +54,11 @@ App.computeViewModel = function (state) {
   const wkEnd = addDays(wkStart, 6);
   const byDue = {};
   S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
+  // Completed tasks are cleared off 주간 일정 so the week view stays focused on
+  // what's still outstanding — they still show up everywhere else (업무 목록,
+  // 월간 일정, etc), which is why this filtered map is kept separate from byDue.
+  const weekByDue = {};
+  S.tasks.filter(t => statusOf(today, t) !== '완료').forEach(t => { (weekByDue[t.due] = weekByDue[t.due] || []).push(t); });
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
@@ -65,7 +70,7 @@ App.computeViewModel = function (state) {
   // chip at its due date so it's never silently dropped from the calendar.
   const WEEK_LANE_COUNT = 2;
   const multiDayCandidates = S.tasks
-    .filter(t => t.start !== t.due && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
+    .filter(t => statusOf(today, t) !== '완료' && t.start !== t.due && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
     .sort((a, b) => parse(a.start) - parse(b.start));
   const laneEnds = [];
   const weekBars = [];
@@ -83,7 +88,7 @@ App.computeViewModel = function (state) {
     }
     const colStart = Math.round((clipStart - wkStart) / 86400000);
     const colEnd = Math.round((clipEnd - wkStart) / 86400000);
-    const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
+    const c = statusOf(today, t) === '지연' ? RED : P;
     weekBars.push({
       id: t.id, label: `${t.name}(${dateRangeLabel(t)})`,
       style: `grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};font-size:10px;font-weight:700;line-height:20px;padding:0 6px;border-radius:4px;background:${c};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;align-self:center`
@@ -95,9 +100,9 @@ App.computeViewModel = function (state) {
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const weekend = i >= 5;
-    const dayTasks = [...(byDue[key] || []).filter(t => t.start === t.due), ...(droppedByDue[key] || [])];
+    const dayTasks = [...(weekByDue[key] || []).filter(t => t.start === t.due), ...(droppedByDue[key] || [])];
     const items = dayTasks.slice(0, 4).map(t => {
-      const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
+      const c = statusOf(today, t) === '지연' ? RED : P;
       return { id: t.id, name: `${t.name}(${dateRangeLabel(t)})`, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
     });
     return {
