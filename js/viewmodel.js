@@ -88,9 +88,9 @@ App.computeViewModel = function (state) {
     });
   }
 
-  // top10
-  const TOP_N = 10;
-  const top10 = [...workActive].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, TOP_N).map((t, i) => ({
+  // top5
+  const TOP_N = 5;
+  const top5 = [...workActive].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).slice(0, TOP_N).map((t, i) => ({
     ...t, rank: i + 1,
     rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < TOP_N - 1 ? '1px solid #F2F3F5' : 'none'}`,
     rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
@@ -102,6 +102,9 @@ App.computeViewModel = function (state) {
     ...t, prioLabel: t.score + '점',
     prioBadge: `background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`
   }));
+
+  // 개인 일정 — 마감이 가장 가까운(임박한) 순으로 정렬
+  const personalCards = active.filter(t => t.type === 'personal').sort((a, b) => dday(today, a.due) - dday(today, b.due));
 
   // Goal status coloring: 'progress' mode compares value achieved vs time elapsed
   // (지연 위험 if behind schedule); numeric/count modes have no timeline to compare
@@ -236,7 +239,7 @@ App.computeViewModel = function (state) {
     googleLastSyncLabel: S.googleLastSyncAt
       ? `${App.util.pad(S.googleLastSyncAt.getHours())}:${App.util.pad(S.googleLastSyncAt.getMinutes())}`
       : null,
-    top10, goalGauges, ongoingCards, ongoingCount: ongoing.length,
+    top5, goalGauges, ongoingCards, ongoingCount: ongoing.length, personalCards,
     allCount: all.length, viewCount: rows.length, tableGroups, typeFilters, statusFilters, sortBy: S.sortBy,
     quadrants,
     ruleRows,

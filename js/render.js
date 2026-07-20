@@ -103,10 +103,10 @@
     </div>`;
   }
 
-  function renderTop10(vm, stretch) {
+  function renderTop5(vm, stretch) {
     const cardExtra = stretch ? ';flex:1;display:flex;flex-direction:column;min-height:0' : '';
     const listExtra = stretch ? 'flex:1;overflow:auto' : '';
-    const rows = vm.top10.map(t => `
+    const rows = vm.top5.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="${t.rowStyle}">
         <div style="${t.rankStyle}">${t.rank}</div>
         <div style="flex:1;min-width:0">
@@ -125,10 +125,43 @@
     return `
     <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px${cardExtra}">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
-        <span style="font-size:15.5px;font-weight:700">우선순위 Top 10</span>
+        <span style="font-size:15.5px;font-weight:700">우선순위 Top 5</span>
         <span style="font-size:11.5px;color:#aaa">중요도×2 + 긴급도 + 마감가중</span>
       </div>
       <div style="${listExtra}">${rows}</div>
+    </div>`;
+  }
+
+  function renderPersonal(vm, stretch) {
+    const cardExtra = stretch ? ';flex:1;display:flex;flex-direction:column;min-height:0' : '';
+    const listExtra = stretch ? 'flex:1;overflow:auto' : '';
+    const cards = vm.personalCards.map(t => `
+      <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:8px 13px;cursor:pointer">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+          <span style="font-size:13.5px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
+          ${t.stalled ? `<span style="background:#FBECEC;color:#E53935;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px">정체</span>` : ''}
+          <span style="${t.ddayStyle}">${t.ddayLabel}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+          <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
+            <div style="height:100%;border-radius:4px;background:${t.barColor};width: ${t.progress}%"></div>
+          </div>
+          <span style="font-size:12.5px;font-weight:900;color:#333;width:34px;text-align:right">${t.progress}%</span>
+        </div>
+      </div>`).join('');
+    return `
+    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px${cardExtra}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
+        <div style="display:flex;align-items:baseline;gap:9px">
+          <span style="font-size:15.5px;font-weight:700">개인 일정</span>
+          <span style="font-size:12px;color:#888">${vm.personalCards.length}건</span>
+        </div>
+        <button data-action="setView" data-value="tasks" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
+      </div>
+      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;${listExtra}">
+        ${cards || `<div style="font-size:12px;color:#bbb;padding:16px 4px;text-align:center">등록된 개인 일정이 없습니다</div>`}
+      </div>
     </div>`;
   }
 
@@ -160,14 +193,14 @@
 
   function renderOngoing(vm) {
     const cards = vm.ongoingCards.map(t => `
-      <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:11px 13px;cursor:pointer">
+      <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:8px 13px;cursor:pointer">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="${t.prioBadge}">${t.prioLabel}</span>
           <span style="font-size:13.5px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
           ${t.stalled ? `<span style="background:#FBECEC;color:#E53935;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px">정체</span>` : ''}
           <span style="${t.ddayStyle}">${t.ddayLabel}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:9px">
+        <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
           <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
             <div style="height:100%;border-radius:4px;background:${t.barColor};width: ${t.progress}%"></div>
           </div>
@@ -183,7 +216,7 @@
         </div>
         <button data-action="setView" data-value="tasks" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
       </div>
-      <div style="padding:12px 16px;display:flex;flex-direction:column;gap:9px;max-height:290px;overflow:auto">${cards}</div>
+      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;max-height:290px;overflow:auto">${cards}</div>
     </div>`;
   }
 
@@ -204,7 +237,8 @@
       </div>
       <div style="display:flex;flex-direction:column;gap:16px">
         ${renderOngoing(vm)}
-        ${renderTop10(vm, true)}
+        ${renderTop5(vm)}
+        ${renderPersonal(vm, true)}
       </div>
     </div>`;
   }
