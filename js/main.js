@@ -66,6 +66,7 @@
       case 'openEdit': App.actions.openEdit(el.dataset.id); break;
       case 'closeModal': App.actions.closeModal(); break;
       case 'saveTask': App.actions.saveTask(); break;
+      case 'completeTask': App.actions.completeTask(); break;
       case 'deleteTask': App.actions.deleteTask(); break;
       case 'setFilterType': App.actions.setFilter('filterType', el.dataset.value); break;
       case 'setFilterStatus': App.actions.setFilter('filterStatus', el.dataset.value); break;

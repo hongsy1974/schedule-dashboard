@@ -541,6 +541,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid #EEF0F2">
           ${vm.isEditing ? `<button data-action="deleteTask" style="border:1px solid #F1C6C4;background:#fff;color:#E53935;font-weight:700;font-size:13px;padding:9px 16px;border-radius:7px;cursor:pointer">삭제</button>` : '<div></div>'}
           <div style="display:flex;gap:10px;margin-left:auto">
+            ${vm.isEditing && f.progress < 100 ? `<button data-action="completeTask" style="border:1px solid #2f9e78;background:#fff;color:#2f9e78;font-weight:700;font-size:13px;padding:9px 16px;border-radius:7px;cursor:pointer">완료 처리</button>` : ''}
             <button data-action="closeModal" style="border:1px solid #E3E5E8;background:#fff;color:#666;font-weight:700;font-size:13px;padding:9px 18px;border-radius:7px;cursor:pointer">취소</button>
             <button data-action="saveTask" style="border:none;background:#F37321;color:#fff;font-weight:700;font-size:13px;padding:9px 22px;border-radius:7px;cursor:pointer">저장</button>
           </div>

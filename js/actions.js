@@ -73,6 +73,13 @@ App.actions = {
     }
   },
 
+  // Quick "완료 처리" button in the edit modal: mark the task 100%/완료 and save
+  // immediately, without the user having to drag the progress slider first.
+  completeTask() {
+    App.state.form = { ...App.state.form, progress: 100 };
+    App.actions.saveTask();
+  },
+
   deleteTask() {
     const eid = App.state.editingId;
     const removed = App.state.tasks.find(t => t.id === eid);
