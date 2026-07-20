@@ -65,22 +65,20 @@ App.computeViewModel = function (state) {
 
   // Multi-day tasks overlapping the current week get a horizontal bar spanning
   // their date range instead of a same-day chip. Lanes are assigned greedily
-  // (classic interval-partitioning) and capped at WEEK_LANE_COUNT so the widget
-  // stays a fixed height; anything that doesn't fit falls back to a same-day
-  // chip at its due date so it's never silently dropped from the calendar.
-  const WEEK_LANE_COUNT = 2;
+  // (classic interval-partitioning); the lane count simply grows to however
+  // many concurrent multi-day tasks a given week actually has, so a task's
+  // date range is always shown connected rather than getting dropped back to
+  // a same-day chip.
   const multiDayCandidates = S.tasks
     .filter(t => statusOf(today, t) !== '완료' && t.start !== t.due && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
     .sort((a, b) => parse(a.start) - parse(b.start));
   const laneEnds = [];
   const weekBars = [];
-  const droppedMultiDay = [];
   multiDayCandidates.forEach(t => {
     const clipStart = parse(t.start) < wkStart ? wkStart : parse(t.start);
     const clipEnd = parse(t.due) > wkEnd ? wkEnd : parse(t.due);
     let lane = laneEnds.findIndex(end => end < clipStart);
     if (lane === -1) {
-      if (laneEnds.length >= WEEK_LANE_COUNT) { droppedMultiDay.push(t); return; }
       lane = laneEnds.length;
       laneEnds.push(clipEnd);
     } else {
@@ -94,13 +92,12 @@ App.computeViewModel = function (state) {
       style: `grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};font-size:10px;font-weight:700;line-height:18px;padding:0 6px;margin:2px 3px;border-radius:4px;background:${c};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;align-self:center`
     });
   });
-  const droppedByDue = {};
-  droppedMultiDay.forEach(t => { (droppedByDue[t.due] = droppedByDue[t.due] || []).push(t); });
+  const WEEK_LANE_COUNT = Math.max(1, laneEnds.length);
 
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const weekend = i >= 5;
-    const dayTasks = [...(weekByDue[key] || []).filter(t => t.start === t.due), ...(droppedByDue[key] || [])];
+    const dayTasks = (weekByDue[key] || []).filter(t => t.start === t.due);
     const items = dayTasks.slice(0, 4).map(t => {
       const c = statusOf(today, t) === '지연' ? RED : P;
       return { id: t.id, name: `${t.name}(${dateRangeLabel(t)})`, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
