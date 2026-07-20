@@ -4,7 +4,7 @@
   // Shared frame height for every non-home page's main content area, matching how
   // tall the home dashboard's grid (목표 달성 현황 + 주간 일정 + 월간 일정 stacked)
   // typically renders, so switching between menu tabs doesn't jump around in size.
-  const MAIN_HEIGHT = 1052;
+  const MAIN_HEIGHT = 1096;
 
   function renderHeader(vm) {
     const nav = vm.navItems.map(n =>
@@ -50,12 +50,17 @@
   }
 
   function renderWeekly(vm) {
-    const days = vm.weekDays.map(d => `
+    const cols = 'repeat(7,minmax(0,1fr))';
+    const heads = vm.weekDays.map(d => `
+      <div data-action="openNewOnDate" data-date="${d.dateIso}" style="${d.colStyle};${d.headStyle}">
+        <span style="${d.dowStyle}">${d.dow}</span>
+        <span style="${d.dateStyle}">${d.date}</span>
+      </div>`).join('');
+    const laneRowH = 22;
+    const laneBg = vm.weekDays.map((d, i) => `<div data-action="openNewOnDate" data-date="${d.dateIso}" style="grid-column:${i + 1};grid-row:1 / ${vm.weekLaneCount + 1};${d.colStyle}"></div>`).join('');
+    const bars = vm.weekBars.map(b => `<div data-action="openEdit" data-id="${b.id}" title="${esc(b.label)}" style="${b.style}">${esc(b.label)}</div>`).join('');
+    const items = vm.weekDays.map(d => `
       <div data-action="openNewOnDate" data-date="${d.dateIso}" style="${d.colStyle}">
-        <div style="${d.headStyle}">
-          <span style="${d.dowStyle}">${d.dow}</span>
-          <span style="${d.dateStyle}">${d.date}</span>
-        </div>
         <div style="padding:7px 6px;display:flex;flex-direction:column;gap:4px;height:96px;overflow:hidden">
           ${d.items.map(taskChip).join('')}
         </div>
@@ -73,7 +78,9 @@
           <button data-action="nextWeek" style="width:26px;height:26px;border:1px solid #E3E5E8;background:#fff;border-radius:6px;cursor:pointer;color:#888">›</button>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(7,1fr)">${days}</div>
+      <div style="display:grid;grid-template-columns:${cols}">${heads}</div>
+      <div style="display:grid;grid-template-columns:${cols};grid-auto-rows:${laneRowH}px;position:relative">${laneBg}${bars}</div>
+      <div style="display:grid;grid-template-columns:${cols}">${items}</div>
     </div>`;
   }
 
@@ -108,8 +115,8 @@
         </div>
       </div>
       <div style="padding:12px 14px 16px">
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px">${heads}</div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:70px;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">${cells}</div>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-bottom:4px">${heads}</div>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:70px;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">${cells}</div>
       </div>
     </div>`;
   }

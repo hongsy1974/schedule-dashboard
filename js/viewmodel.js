@@ -2,7 +2,7 @@ App.computeViewModel = function (state) {
   const today = App.today;
   const { P, RED, GREEN, IMP } = App.const;
   const { dday, score, statusOf, stalled, ddayView, typeBadge, barColor, goalRollup } = App.logic;
-  const { iso, addDays } = App.util;
+  const { iso, addDays, parse } = App.util;
   const S = state;
 
   const decorate = (t) => {
@@ -51,14 +51,54 @@ App.computeViewModel = function (state) {
   // weekly
   const DOW = ['월', '화', '수', '목', '금', '토', '일'];
   const wkStart = addDays(today, -((today.getDay() + 6) % 7) + S.weekOffset * 7);
+  const wkEnd = addDays(wkStart, 6);
   const byDue = {};
   S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
+
+  const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
+  const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
+
+  // Multi-day tasks overlapping the current week get a horizontal bar spanning
+  // their date range instead of a same-day chip. Lanes are assigned greedily
+  // (classic interval-partitioning) and capped at WEEK_LANE_COUNT so the widget
+  // stays a fixed height; anything that doesn't fit falls back to a same-day
+  // chip at its due date so it's never silently dropped from the calendar.
+  const WEEK_LANE_COUNT = 2;
+  const multiDayCandidates = S.tasks
+    .filter(t => t.start !== t.due && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
+    .sort((a, b) => parse(a.start) - parse(b.start));
+  const laneEnds = [];
+  const weekBars = [];
+  const droppedMultiDay = [];
+  multiDayCandidates.forEach(t => {
+    const clipStart = parse(t.start) < wkStart ? wkStart : parse(t.start);
+    const clipEnd = parse(t.due) > wkEnd ? wkEnd : parse(t.due);
+    let lane = laneEnds.findIndex(end => end < clipStart);
+    if (lane === -1) {
+      if (laneEnds.length >= WEEK_LANE_COUNT) { droppedMultiDay.push(t); return; }
+      lane = laneEnds.length;
+      laneEnds.push(clipEnd);
+    } else {
+      laneEnds[lane] = clipEnd;
+    }
+    const colStart = Math.round((clipStart - wkStart) / 86400000);
+    const colEnd = Math.round((clipEnd - wkStart) / 86400000);
+    const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
+    weekBars.push({
+      id: t.id, label: `${t.name}(${dateRangeLabel(t)})`,
+      style: `grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};font-size:10px;font-weight:700;line-height:20px;padding:0 6px;border-radius:4px;background:${c};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;align-self:center`
+    });
+  });
+  const droppedByDue = {};
+  droppedMultiDay.forEach(t => { (droppedByDue[t.due] = droppedByDue[t.due] || []).push(t); });
+
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const weekend = i >= 5;
-    const items = (byDue[key] || []).slice(0, 4).map(t => {
+    const dayTasks = [...(byDue[key] || []).filter(t => t.start === t.due), ...(droppedByDue[key] || [])];
+    const items = dayTasks.slice(0, 4).map(t => {
       const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
-      return { id: t.id, name: t.name, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
+      return { id: t.id, name: `${t.name}(${dateRangeLabel(t)})`, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
     });
     return {
       dow: dw, date: dt.getDate(), dateIso: key, items,
@@ -68,7 +108,7 @@ App.computeViewModel = function (state) {
       dateStyle: `display:block;font-size:14px;font-weight:${isToday ? 900 : 700};color:${isToday ? P : (weekend ? '#bbb' : '#444')};margin-top:1px`
     };
   });
-  const we = addDays(wkStart, 6);
+  const we = wkEnd;
   const weekRangeLabel = `${wkStart.getMonth() + 1}/${wkStart.getDate()} – ${we.getMonth() + 1}/${we.getDate()}`;
 
   // monthly
@@ -239,7 +279,7 @@ App.computeViewModel = function (state) {
     todayLabel: `${today.getFullYear()}. ${App.util.pad(today.getMonth() + 1)}. ${App.util.pad(today.getDate())} (${['일', '월', '화', '수', '목', '금', '토'][today.getDay()]})`,
     navItems, alerts: alertsCapped,
     view: S.view,
-    weekDays, weekRangeLabel,
+    weekDays, weekRangeLabel, weekBars, weekLaneCount: WEEK_LANE_COUNT,
     monthLabel, monthCells, dowHeaders,
     googleConnected: App.googleCalendar ? App.googleCalendar.isConnected() : false,
     googleSyncing: S.googleSyncing,
