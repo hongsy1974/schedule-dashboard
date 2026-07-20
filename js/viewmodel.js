@@ -51,11 +51,11 @@ App.computeViewModel = function (state) {
     const weekend = i >= 5;
     const items = (byDue[key] || []).slice(0, 4).map(t => {
       const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
-      return { name: t.name, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis` };
+      return { id: t.id, name: t.name, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
     });
     return {
-      dow: dw, date: dt.getDate(), items,
-      colStyle: `border-right:${i < 6 ? '1px solid #EEF0F2' : 'none'};background:${isToday ? '#FFFBF7' : '#fff'}`,
+      dow: dw, date: dt.getDate(), dateIso: key, items,
+      colStyle: `border-right:${i < 6 ? '1px solid #EEF0F2' : 'none'};background:${isToday ? '#FFFBF7' : '#fff'};cursor:pointer`,
       headStyle: `text-align:center;padding:7px 0;border-bottom:1px solid #EEF0F2;background:${isToday ? '#FFF4EC' : '#FAFBFC'}`,
       dowStyle: `font-size:11px;font-weight:700;color:${isToday ? P : (weekend ? '#bbb' : '#888')}`,
       dateStyle: `display:block;font-size:14px;font-weight:${isToday ? 900 : 700};color:${isToday ? P : (weekend ? '#bbb' : '#444')};margin-top:1px`
@@ -79,11 +79,11 @@ App.computeViewModel = function (state) {
     const dayTasks = byDue[key] || [];
     const items = dayTasks.slice(0, 2).map(t => {
       const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
-      return { name: t.name, style: `font-size:9.5px;line-height:1.2;padding:1px 4px;border-radius:3px;background:${c}18;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis` };
+      return { id: t.id, name: t.name, style: `font-size:9.5px;line-height:1.2;padding:1px 4px;border-radius:3px;background:${c}18;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
     });
     monthCells.push({
-      day, items, more: dayTasks.length - 2, moreShow: dayTasks.length > 2,
-      cellStyle: `height:70px;overflow:hidden;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
+      day, dateIso: key, items, more: dayTasks.length - 2, moreShow: dayTasks.length > 2,
+      cellStyle: `height:70px;overflow:hidden;cursor:pointer;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
       numStyle: `font-size:11.5px;font-weight:${isToday ? 900 : 600};color:${isToday ? '#fff' : (weekend ? '#bbb' : '#555')};${isToday ? `background:${P};border-radius:50%;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center` : ''}`
     });
   }

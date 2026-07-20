@@ -35,12 +35,12 @@
   }
 
   function taskChip(t) {
-    return `<div title="${esc(t.name)}" style="${t.style}">${esc(t.name)}</div>`;
+    return `<div data-action="openEdit" data-id="${t.id}" title="${esc(t.name)}" style="${t.style}">${esc(t.name)}</div>`;
   }
 
   function renderWeekly(vm) {
     const days = vm.weekDays.map(d => `
-      <div style="${d.colStyle}">
+      <div data-action="openNewOnDate" data-date="${d.dateIso}" style="${d.colStyle}">
         <div style="${d.headStyle}">
           <span style="${d.dowStyle}">${d.dow}</span>
           <span style="${d.dateStyle}">${d.date}</span>
@@ -69,7 +69,7 @@
   function renderMonthly(vm) {
     const heads = vm.dowHeaders.map(h => `<div style="${h.style}">${h.label}</div>`).join('');
     const cells = vm.monthCells.map(c => `
-      <div style="${c.cellStyle}">
+      <div data-action="openNewOnDate" data-date="${c.dateIso}" style="${c.cellStyle}">
         <span style="${c.numStyle}">${c.day}</span>
         <div style="display:flex;flex-direction:column;gap:2px;margin-top:2px">
           ${c.items.map(taskChip).join('')}

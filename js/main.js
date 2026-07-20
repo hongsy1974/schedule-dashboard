@@ -62,6 +62,7 @@
       case 'nextMonth': App.actions.nextMonth(); break;
       case 'thisMonth': App.actions.thisMonth(); break;
       case 'openNew': App.actions.openNew(); break;
+      case 'openNewOnDate': App.actions.openNewOnDate(el.dataset.date); break;
       case 'openEdit': App.actions.openEdit(el.dataset.id); break;
       case 'closeModal': App.actions.closeModal(); break;
       case 'saveTask': App.actions.saveTask(); break;

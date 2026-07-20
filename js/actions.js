@@ -24,6 +24,15 @@ App.actions = {
     App.actions.rerender();
   },
 
+  // Clicking a date on the weekly/monthly calendar opens the same modal,
+  // pre-filled with that date as both start and due (single-day by default).
+  openNewOnDate(dateIso) {
+    App.state.modalOpen = true;
+    App.state.editingId = null;
+    App.state.form = { name: '', desc: '', type: 'ongoing', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '매월', goalId: '', progress: 0, memo: '' };
+    App.actions.rerender();
+  },
+
   openEdit(id) {
     const t = App.state.tasks.find(x => x.id === id);
     if (!t) return;
