@@ -1,6 +1,10 @@
 (function () {
   const esc = App.util.esc;
   const P = App.const.P;
+  // Shared frame height for every non-home page's main content area, matching how
+  // tall the home dashboard's grid (목표 달성 현황 + 주간 일정 + 월간 일정 stacked)
+  // typically renders, so switching between menu tabs doesn't jump around in size.
+  const MAIN_HEIGHT = 1052;
 
   function renderHeader(vm) {
     const nav = vm.navItems.map(n =>
@@ -296,7 +300,7 @@
       </div>
       <button data-action="openNew" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 업무 등록</button>
     </div>
-    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden">
+    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden;height:${MAIN_HEIGHT}px;display:flex;flex-direction:column">
       <div style="display:flex;align-items:center;gap:16px;padding:12px 18px;border-bottom:1px solid #EEF0F2;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:7px">
           <span style="font-size:12px;color:#888;font-weight:700">유형</span>${typeFilters}
@@ -324,7 +328,7 @@
         <div style="padding:10px 8px">진행률</div>
         <div style="padding:10px 8px">상태</div>
       </div>
-      <div style="max-height:560px;overflow:auto">${groups}</div>
+      <div style="flex:1;overflow:auto">${groups}</div>
     </div>`;
   }
 
@@ -354,7 +358,7 @@
       <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">아이젠하워 매트릭스</h1>
       <div style="font-size:12.5px;color:#888;margin-top:3px">중요도 × 긴급도 4분면 · 완료 업무 제외</div>
     </div>
-    <div style="display:grid;grid-template-columns:34px 1fr 1fr;grid-template-rows:34px 1fr 1fr;gap:10px;height:660px">
+    <div style="display:grid;grid-template-columns:34px 1fr 1fr;grid-template-rows:34px 1fr 1fr;gap:10px;height:${MAIN_HEIGHT}px">
       <div style="grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 높음 →</div>
       <div style="grid-column:3;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 낮음</div>
       <div style="grid-column:1;grid-row:2;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#888">중요도 높음 ↑</div>
@@ -380,7 +384,7 @@
       <h1 style="margin:0;font-size:20px;font-weight:900;letter-spacing:-.4px">반복 일정 설정</h1>
       <div style="font-size:12.5px;color:#888;margin-top:3px">주기가 도래하면 업무가 자동 생성되고 사전 알림일부터 대시보드에 노출됩니다</div>
     </div>
-    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden">
+    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden;height:${MAIN_HEIGHT}px;display:flex;flex-direction:column">
       <div style="display:grid;grid-template-columns:1.8fr 1fr 1.4fr .9fr 1.3fr .8fr;background:#F5F6F7;border-bottom:1px solid #E3E5E8;font-size:11.5px;font-weight:700;color:#888">
         <div style="padding:11px 16px">규칙명</div>
         <div style="padding:11px 8px">주기</div>
@@ -389,7 +393,7 @@
         <div style="padding:11px 8px">다음 생성 예정일</div>
         <div style="padding:11px 8px;text-align:center">활성</div>
       </div>
-      ${rows}
+      <div style="flex:1;overflow:auto">${rows}</div>
     </div>`;
   }
 
@@ -432,8 +436,9 @@
       </div>
       <button data-action="openNewGoal" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 목표 추가</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px">${cards}</div>
-    ${cards ? '' : `<div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;padding:40px;text-align:center;color:#aaa;font-size:13px">등록된 목표가 없습니다. "+ 새 목표 추가"로 첫 목표를 만들어보세요.</div>`}`;
+    <div style="height:${MAIN_HEIGHT}px;overflow:auto;display:flex;flex-direction:column;gap:14px">
+      ${cards || `<div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;padding:40px;text-align:center;color:#aaa;font-size:13px">등록된 목표가 없습니다. "+ 새 목표 추가"로 첫 목표를 만들어보세요.</div>`}
+    </div>`;
   }
 
   const lblStyle = 'display:block;font-size:12px;font-weight:700;color:#666;margin-bottom:6px';
