@@ -62,15 +62,15 @@ App.computeViewModel = function (state) {
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
+  const durationDays = (t) => Math.round((parse(t.due) - parse(t.start)) / 86400000) + 1;
 
-  // Multi-day tasks overlapping the current week get a horizontal bar spanning
-  // their date range instead of a same-day chip. Lanes are assigned greedily
-  // (classic interval-partitioning); the lane count simply grows to however
-  // many concurrent multi-day tasks a given week actually has, so a task's
-  // date range is always shown connected rather than getting dropped back to
-  // a same-day chip.
+  // Only genuinely long-running tasks (10+ days) get a horizontal bar spanning
+  // their date range; anything shorter reads better as a normal chip under its
+  // due date (like a single-day item), so it only gets a lane below once it's
+  // actually long enough to benefit from being shown connected.
+  const LONG_DURATION_DAYS = 10;
   const multiDayCandidates = S.tasks
-    .filter(t => statusOf(today, t) !== '완료' && t.start !== t.due && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
+    .filter(t => statusOf(today, t) !== '완료' && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
     .sort((a, b) => parse(a.start) - parse(b.start));
   const laneEnds = [];
   const weekBars = [];
@@ -97,7 +97,7 @@ App.computeViewModel = function (state) {
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const weekend = i >= 5;
-    const dayTasks = (weekByDue[key] || []).filter(t => t.start === t.due);
+    const dayTasks = (weekByDue[key] || []).filter(t => t.start === t.due || durationDays(t) < LONG_DURATION_DAYS);
     const items = dayTasks.slice(0, 4).map(t => {
       const c = statusOf(today, t) === '지연' ? RED : P;
       return { id: t.id, name: `${t.name}(${dateRangeLabel(t)})`, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
