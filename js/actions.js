@@ -27,7 +27,7 @@ App.actions = {
     const today = App.today, iso = App.util.iso, addDays = App.util.addDays;
     App.state.modalOpen = true;
     App.state.editingId = null;
-    App.state.form = { name: '', desc: '', type: 'ongoing', start: iso(today), due: iso(addDays(today, 7)), imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memo: '' };
+    App.state.form = { name: '', desc: '', type: 'ongoing', start: iso(today), due: iso(addDays(today, 7)), imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memoLog: [] };
     App.actions.rerender();
   },
 
@@ -36,7 +36,7 @@ App.actions = {
   openNewOnDate(dateIso) {
     App.state.modalOpen = true;
     App.state.editingId = null;
-    App.state.form = { name: '', desc: '', type: 'ongoing', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memo: '' };
+    App.state.form = { name: '', desc: '', type: 'ongoing', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memoLog: [] };
     App.actions.rerender();
   },
 
@@ -48,7 +48,20 @@ App.actions = {
     // Legacy records may still have type:'recurring' — fold into 지속 업무 + recur here too.
     const type = t.type === 'recurring' ? 'ongoing' : t.type;
     const recur = t.type === 'recurring' ? (t.recur || '매월') : (t.recur || '');
-    App.state.form = { name: t.name, desc: t.desc || '', type, start: t.start, due: t.due, imp: t.imp, urg: t.urg, recur, goalId: t.goalId || '', progress: t.progress, memo: t.memo || '' };
+    // Legacy records have a single freeform 메모 string — fold it into the new
+    // dated memoLog as a one-time entry so nothing written before is lost.
+    const memoLog = t.memoLog && t.memoLog.length ? t.memoLog : (t.memo ? [{ date: t.updated || t.start, text: t.memo }] : []);
+    App.state.form = { name: t.name, desc: t.desc || '', type, start: t.start, due: t.due, imp: t.imp, urg: t.urg, recur, goalId: t.goalId || '', progress: t.progress, memoLog };
+    App.actions.rerender();
+  },
+
+  // Appends a new dated memo entry (newest first) to the task being edited.
+  // Persisted like every other form field once 저장 is clicked.
+  addMemoEntry(date, text) {
+    const trimmed = (text || '').trim();
+    if (!trimmed) return;
+    const entry = { date: date || App.util.iso(App.today), text: trimmed };
+    App.state.form = { ...App.state.form, memoLog: [entry, ...(App.state.form.memoLog || [])] };
     App.actions.rerender();
   },
 

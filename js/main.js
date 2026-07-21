@@ -56,6 +56,12 @@
     switch (action) {
       case 'setView': App.actions.setView(el.dataset.value); break;
       case 'goToTasksFiltered': App.actions.goToTasksFiltered(el.dataset.value); break;
+      case 'addMemoEntry': {
+        const dateEl = root.querySelector('#memo-entry-date');
+        const textEl = root.querySelector('#memo-entry-text');
+        App.actions.addMemoEntry(dateEl.value, textEl.value);
+        break;
+      }
       case 'prevWeek': App.actions.prevWeek(); break;
       case 'nextWeek': App.actions.nextWeek(); break;
       case 'thisWeek': App.actions.thisWeek(); break;
@@ -112,7 +118,6 @@
     // or not, and state stays in sync in the background for when saveTask() reads it.
     if (action === 'fName') return App.actions.setFormQuiet('name', el.value);
     if (action === 'fDesc') return App.actions.setFormQuiet('desc', el.value);
-    if (action === 'fMemo') return App.actions.setFormQuiet('memo', el.value);
     if (action === 'gfName') return App.actions.setGoalFormQuiet('name', el.value);
     if (action === 'gfUnit') return App.actions.setGoalFormQuiet('targetUnit', el.value);
 

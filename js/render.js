@@ -535,8 +535,19 @@
             <input id="f-progress" type="range" min="0" max="100" step="5" value="${f.progress}" data-action="fProg" style="width:100%;accent-color:#F37321;cursor:pointer">
           </div>
           <div style="grid-column:1/3">
-            <label style="${lblStyle}">메모</label>
-            <textarea id="f-memo" data-action="fMemo" rows="2" placeholder="메모" style="${areaStyle}">${esc(f.memo)}</textarea>
+            <label style="${lblStyle}">진행 메모 (날짜별 기록)</label>
+            <div style="border:1px solid #E3E5E8;border-radius:7px;max-height:150px;overflow:auto;background:#FAFBFC">
+              ${(f.memoLog || []).length ? f.memoLog.map((entry, i) => `
+              <div style="padding:8px 12px;display:flex;gap:10px;${i < f.memoLog.length - 1 ? 'border-bottom:1px solid #EEF0F2' : ''}">
+                <span style="font-size:11.5px;color:#888;font-weight:700;flex:none;width:40px">${esc(entry.date.slice(5).replace('-', '/'))}</span>
+                <span style="font-size:12.5px;color:#333;flex:1;min-width:0;white-space:pre-wrap;word-break:break-word">${esc(entry.text)}</span>
+              </div>`).join('') : `<div style="font-size:12px;color:#bbb;padding:14px;text-align:center">기록된 메모가 없습니다</div>`}
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input id="memo-entry-date" type="date" value="${App.util.iso(App.today)}" style="width:132px;border:1px solid #E3E5E8;border-radius:7px;padding:8px 10px;font-size:13px;color:#333">
+              <input id="memo-entry-text" type="text" placeholder="진행 내용을 입력하세요" style="flex:1;min-width:0;border:1px solid #E3E5E8;border-radius:7px;padding:8px 10px;font-size:13px;color:#333">
+              <button data-action="addMemoEntry" style="border:none;background:#F37321;color:#fff;font-weight:700;font-size:13px;padding:0 16px;border-radius:7px;cursor:pointer;flex:none">추가</button>
+            </div>
           </div>
           <div style="grid-column:1/3;background:#FFF7F1;border:1px solid #FADFC9;border-radius:7px;padding:11px 14px;display:flex;align-items:center;gap:10px">
             <span style="font-size:12.5px;color:#7a4a24;font-weight:700">예상 우선순위 점수</span>
