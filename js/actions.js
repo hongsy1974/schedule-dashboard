@@ -159,6 +159,28 @@ App.actions = {
     App.firebase.updateRule(id, { nextDue: value }).catch(err => notifySaveError('반복 규칙', err));
   },
 
+  // 업무명 is auto-filled from the task, but kept correctable here directly
+  // (e.g. to fix a typo or a duplicate rule) without having to reopen the task.
+  setRuleName(id, value) {
+    const name = value.trim();
+    if (!name) return;
+    App.state.rules = App.state.rules.map(r => r.id === id ? { ...r, name } : r);
+    App.actions.rerender();
+    App.firebase.updateRule(id, { name }).catch(err => notifySaveError('반복 규칙', err));
+  },
+
+  setRuleAlertPeriod(id, value) {
+    App.state.rules = App.state.rules.map(r => r.id === id ? { ...r, alertPeriod: value } : r);
+    App.actions.rerender();
+    App.firebase.updateRule(id, { alertPeriod: value }).catch(err => notifySaveError('반복 규칙', err));
+  },
+
+  deleteRule(id) {
+    App.state.rules = App.state.rules.filter(r => r.id !== id);
+    App.actions.rerender();
+    App.firebase.deleteRule(id).catch(err => notifySaveError('반복 규칙 삭제', err));
+  },
+
   // Keeps 반복 일정 in sync with the task modal: 규칙명/주기/생성 시점 mirror
   // the task's 업무명/반복 주기/시작일 every time it's saved with 반복 checked.
   // 다음 생성 예정일 and 활성 are left alone here — those are only ever set
@@ -172,7 +194,7 @@ App.actions = {
       App.actions.rerender();
       App.firebase.updateRule(existing.id, payload).catch(err => notifySaveError('반복 규칙', err));
     } else {
-      const payload = { name: f.name.trim(), cycle: f.recur, genPoint: f.start, alertDays: 3, nextDue: null, active: true, taskId };
+      const payload = { name: f.name.trim(), cycle: f.recur, genPoint: f.start, alertPeriod: '1개월', nextDue: null, active: true, taskId };
       App.firebase.addRule(payload).then(ref => {
         App.state.rules = [...App.state.rules, { id: ref.id, ...payload }];
         App.actions.rerender();

@@ -50,6 +50,9 @@ window.App.firebase = {
   updateRule(id, payload) {
     return updateDoc(doc(db, 'rules', id), payload);
   },
+  deleteRule(id) {
+    return deleteDoc(doc(db, 'rules', id));
+  },
   addGoal(payload) {
     return addDoc(collection(db, 'goals'), payload);
   },

@@ -380,18 +380,31 @@
     </div>`;
   }
 
+  const RULE_COLS = '1.6fr .8fr 1.1fr 1fr 1.2fr .7fr .6fr';
+
   function renderRecurring(vm) {
     const rows = vm.ruleRows.map(r => `
-      <div style="display:grid;grid-template-columns:1.8fr 1fr 1.4fr .9fr 1.3fr .8fr;border-bottom:1px solid #F2F3F5;align-items:center;font-size:13px">
-        <div style="padding:13px 16px;font-weight:500">${esc(r.name)}</div>
+      <div style="display:grid;grid-template-columns:${RULE_COLS};border-bottom:1px solid #F2F3F5;align-items:center;font-size:13px">
+        <div style="padding:13px 16px">
+          <input type="text" data-action="setRuleName" data-id="${r.id}" value="${esc(r.name)}" style="width:100%;border:1px solid transparent;border-radius:6px;padding:5px 7px;font-size:13px;font-weight:500;color:#333;background:transparent">
+        </div>
         <div style="padding:13px 8px"><span style="background:#F5F6F7;border:1px solid #E3E5E8;color:#666;font-size:11.5px;padding:2px 9px;border-radius:4px">${r.cycle}</span></div>
         <div style="padding:13px 8px;color:#666">${esc(r.genPointLabel)}</div>
-        <div style="padding:13px 8px;text-align:center;color:#666">${r.alertDays}일 전</div>
+        <div style="padding:13px 8px">
+          <select data-action="setRuleAlertPeriod" data-id="${r.id}" style="border:1px solid #E3E5E8;border-radius:6px;padding:5px 7px;font-size:12.5px;color:#333">
+            <option value="3개월" ${r.alertPeriod === '3개월' ? 'selected' : ''}>3개월 전</option>
+            <option value="1개월" ${r.alertPeriod === '1개월' ? 'selected' : ''}>1개월 전</option>
+            <option value="1주일" ${r.alertPeriod === '1주일' ? 'selected' : ''}>1주일 전</option>
+          </select>
+        </div>
         <div style="padding:13px 8px">
           <input type="date" data-action="setRuleNextDue" data-id="${r.id}" value="${r.nextDue || ''}" style="border:1px solid #E3E5E8;border-radius:6px;padding:5px 7px;font-size:12.5px;color:#333">
         </div>
         <div style="padding:13px 8px;display:flex;justify-content:center">
           <button data-action="toggleRule" data-id="${r.id}" style="${r.toggleStyle}"><span style="${r.knobStyle}"></span></button>
+        </div>
+        <div style="padding:13px 8px;display:flex;justify-content:center">
+          <button data-action="deleteRule" data-id="${r.id}" title="삭제" style="border:1px solid #F1C6C4;background:#fff;color:#E53935;font-size:12px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer">삭제</button>
         </div>
       </div>`).join('');
     return `
@@ -400,13 +413,14 @@
       <div style="font-size:12.5px;color:#888;margin-top:3px">주기가 도래하면 업무가 자동 생성되고 사전 알림일부터 대시보드에 노출됩니다</div>
     </div>
     <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px;overflow:hidden;height:${MAIN_HEIGHT}px;display:flex;flex-direction:column">
-      <div style="display:grid;grid-template-columns:1.8fr 1fr 1.4fr .9fr 1.3fr .8fr;background:#F5F6F7;border-bottom:1px solid #E3E5E8;font-size:11.5px;font-weight:700;color:#888">
-        <div style="padding:11px 16px">규칙명</div>
+      <div style="display:grid;grid-template-columns:${RULE_COLS};background:#F5F6F7;border-bottom:1px solid #E3E5E8;font-size:11.5px;font-weight:700;color:#888">
+        <div style="padding:11px 16px">업무명</div>
         <div style="padding:11px 8px">주기</div>
         <div style="padding:11px 8px">생성 시점</div>
-        <div style="padding:11px 8px;text-align:center">사전 알림</div>
+        <div style="padding:11px 8px">사전 알림</div>
         <div style="padding:11px 8px">다음 생성 예정일</div>
         <div style="padding:11px 8px;text-align:center">활성</div>
+        <div style="padding:11px 8px;text-align:center">삭제</div>
       </div>
       <div style="flex:1;overflow:auto">${rows}</div>
     </div>`;

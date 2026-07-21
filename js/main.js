@@ -79,6 +79,7 @@
       case 'setFilterType': App.actions.setFilter('filterType', el.dataset.value); break;
       case 'setFilterStatus': App.actions.setFilter('filterStatus', el.dataset.value); break;
       case 'toggleRule': App.actions.toggleRule(el.dataset.id); break;
+      case 'deleteRule': App.actions.deleteRule(el.dataset.id); break;
       case 'setImp': App.actions.setForm('imp', +el.dataset.value); break;
       case 'setUrg': App.actions.setForm('urg', +el.dataset.value); break;
       case 'openNewGoal': App.actions.openNewGoal(); break;
@@ -98,6 +99,8 @@
     else if (action === 'setRowProgress') App.actions.setProgress(el.dataset.id, +el.value);
     else if (action === 'setRowStatus') App.actions.setStatus(el.dataset.id, el.value);
     else if (action === 'setRuleNextDue') App.actions.setRuleNextDue(el.dataset.id, el.value);
+    else if (action === 'setRuleName') App.actions.setRuleName(el.dataset.id, el.value);
+    else if (action === 'setRuleAlertPeriod') App.actions.setRuleAlertPeriod(el.dataset.id, el.value);
     else if (action === 'fType') App.actions.setForm('type', el.value);
     else if (action === 'fGoal') App.actions.setForm('goalId', el.value);
     else if (action === 'fIsRecur') App.actions.setForm('recur', el.checked ? '매월' : '');

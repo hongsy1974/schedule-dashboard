@@ -248,10 +248,11 @@ App.computeViewModel = function (state) {
     };
   });
 
-  // rules — 규칙명/주기/생성 시점 are auto-filled from the task modal's 반복
-  // checkbox (see actions.upsertRuleForTask); 다음 생성 예정일 and 활성 stay
-  // manual here. Active rules sort first, then within each group by 다음
-  // 생성 예정일 (soonest first, undated ones last).
+  // rules — 업무명/주기/생성 시점 are auto-filled from the task modal's 반복
+  // checkbox (see actions.upsertRuleForTask), but 업무명 can be corrected by
+  // hand here too (e.g. typos, duplicates). 다음 생성 예정일 and 활성 stay
+  // manual. Active rules sort first, then within each group by 다음 생성
+  // 예정일 (soonest first, undated ones last).
   const ruleRows = [...S.rules].sort((a, b) => {
     if (!!a.active !== !!b.active) return a.active ? -1 : 1;
     if (!a.nextDue && !b.nextDue) return 0;
@@ -260,7 +261,8 @@ App.computeViewModel = function (state) {
     return parse(a.nextDue) - parse(b.nextDue);
   }).map(r => ({
     ...r,
-    genPointLabel: r.genPoint ? `${mdLabel(parse(r.genPoint))}부터` : '—',
+    genPointLabel: r.genPoint ? mdLabel(parse(r.genPoint)) : '—',
+    alertPeriod: r.alertPeriod || '1개월',
     toggleStyle: `width:42px;height:23px;border-radius:12px;border:none;cursor:pointer;position:relative;background:${r.active ? P : '#cfd2d6'};transition:background .15s`,
     knobStyle: `position:absolute;top:2px;left:${r.active ? '21px' : '2px'};width:19px;height:19px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)`
   }));
