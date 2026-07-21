@@ -30,10 +30,21 @@ App.util = {
 App.logic = {
   dday(today, due) { return Math.round((App.util.parse(due) - today) / 86400000); },
 
+  // Graduated so a D-DAY (or overdue) item always floats above anything with
+  // more days left, regardless of how its 중요도/긴급도 compare (max base
+  // score from those two is 9, so 10+ here guarantees it wins).
+  deadlineWeight(dd) {
+    if (dd < 0) return 12;
+    if (dd === 0) return 10;
+    if (dd === 1) return 6;
+    if (dd === 2) return 4;
+    if (dd === 3) return 2;
+    return 0;
+  },
+
   score(today, t) {
     let s = t.urg * 2 + t.imp;
-    const dd = App.logic.dday(today, t.due);
-    if (t.rawStatus !== '완료' && dd <= 3) s += 1;
+    if (t.rawStatus !== '완료') s += App.logic.deadlineWeight(App.logic.dday(today, t.due));
     return s;
   },
 

@@ -1,7 +1,7 @@
 App.computeViewModel = function (state) {
   const today = App.today;
   const { P, RED, GREEN, IMP } = App.const;
-  const { dday, score, statusOf, stalled, ddayView, typeBadge, barColor, goalRollup } = App.logic;
+  const { dday, score, statusOf, stalled, ddayView, typeBadge, barColor, goalRollup, deadlineWeight } = App.logic;
   const { iso, addDays, parse } = App.util;
   const S = state;
 
@@ -272,7 +272,7 @@ App.computeViewModel = function (state) {
   const formScore = f.name !== undefined ? (() => {
     const dd = dday(today, f.due || iso(today));
     let s = (f.urg || 2) * 2 + (f.imp || 2);
-    if ((f.progress || 0) < 100 && dd <= 3) s += 1;
+    if ((f.progress || 0) < 100) s += deadlineWeight(dd);
     return s;
   })() : 0;
   const btnStyle = (on) => `flex:1;height:34px;border:1px solid ${on ? P : '#E3E5E8'};background:${on ? '#FFF4EC' : '#fff'};color:${on ? P : '#888'};border-radius:7px;font-size:13px;font-weight:${on ? 700 : 500};cursor:pointer`;
