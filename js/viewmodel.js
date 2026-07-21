@@ -230,8 +230,12 @@ App.computeViewModel = function (state) {
   const typeFilters = [['all', '전체'], ['ongoing', '지속'], ['goal', '목표'], ['simple', '단순'], ['personal', '개인']].map(([v, l]) => ({ value: v, label: l, active: S.filterType === v }));
   const statusFilters = [['all', '전체'], ['예정', '예정'], ['진행중', '진행중'], ['완료', '완료'], ['지연', '지연']].map(([v, l]) => ({ value: v, label: l, active: S.filterStatus === v }));
 
-  // matrix
-  const quad = (hi, hu) => workActive.filter(t => (t.imp >= 2) === hi && (t.urg >= 2) === hu).sort((a, b) => b.score - a.score);
+  // matrix — a task due today always lands in 즉시 처리 (DO) regardless of its
+  // own 중요도/긴급도 rating, since a D-DAY deadline overrides everything else.
+  const quad = (hi, hu) => workActive.filter(t => {
+    if (dday(today, t.due) === 0) return hi && hu;
+    return (t.imp >= 2) === hi && (t.urg >= 2) === hu;
+  }).sort((a, b) => b.score - a.score);
   const qmeta = [
     { key: [true, true], title: '즉시 처리', action: 'DO', dot: RED, bg: '#FFF6F5' },
     { key: [true, false], title: '계획 수립', action: 'PLAN', dot: P, bg: '#FFFAF5' },
