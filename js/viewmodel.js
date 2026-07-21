@@ -54,11 +54,6 @@ App.computeViewModel = function (state) {
   const wkEnd = addDays(wkStart, 6);
   const byDue = {};
   S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
-  // Completed tasks are cleared off 주간 일정 so the week view stays focused on
-  // what's still outstanding — they still show up everywhere else (업무 목록,
-  // 월간 일정, etc), which is why this uses its own filtered task list instead
-  // of the byDue map above.
-  const weekActiveTasks = S.tasks.filter(t => statusOf(today, t) !== '완료');
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
@@ -107,12 +102,17 @@ App.computeViewModel = function (state) {
     // Single-day tasks show on their one day; short multi-day tasks (under the
     // bar threshold) repeat in every day cell they cover so the span still
     // reads as connected without needing a dedicated lane. 지속 업무 is the
-    // exception — always shown once, on its 종료일 only.
-    const dayTasks = weekActiveTasks.filter(t => (isOngoing(t) || t.start === t.due)
-      ? t.due === key
-      : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key));
+    // exception — always shown once, on its 종료일 only. Completed tasks are
+    // anchored to the day they were marked 완료 (completedDate, falling back
+    // to 업데이트 date for older records saved before this field existed).
+    const dayTasks = S.tasks.filter(t => {
+      if (statusOf(today, t) === '완료') return (t.completedDate || t.updated) === key;
+      return (isOngoing(t) || t.start === t.due) ? t.due === key
+        : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
+    });
     const items = dayTasks.slice(0, 4).map(t => {
-      const c = statusOf(today, t) === '지연' ? RED : P;
+      const st = statusOf(today, t);
+      const c = st === '완료' ? GREEN : (st === '지연' ? RED : P);
       return { id: t.id, name: `${t.name}(${dateRangeLabel(t)})`, style: `font-size:10.5px;line-height:1.25;padding:3px 5px;border-radius:4px;background:${c}18;color:${c};border-left:2px solid ${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
     });
     return {

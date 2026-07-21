@@ -3,6 +3,18 @@ function notifySaveError(label, err) {
   alert(`${label} 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.\n(${err.message})`);
 }
 
+// 완료 처리된 날짜: set once the moment a task first becomes 완료 (progress
+// 100 or rawStatus 완료), kept as-is on later edits while it stays complete,
+// and cleared if it's un-completed. Used to anchor it back onto 주간 일정 on
+// the day it was actually finished, instead of by 시작일/마감일.
+function completedDateFor(prev, rawStatus, progress) {
+  const isComplete = rawStatus === '완료' || progress >= 100;
+  if (!isComplete) return null;
+  const wasComplete = prev && (prev.rawStatus === '완료' || prev.progress >= 100);
+  if (wasComplete && prev.completedDate) return prev.completedDate;
+  return App.util.iso(App.today);
+}
+
 App.actions = {
   rerender: null, // wired up by main.js
 
@@ -85,14 +97,16 @@ App.actions = {
     if (App.state.editingId) {
       const eid = App.state.editingId;
       const existing = App.state.tasks.find(t => t.id === eid);
-      const payload = { ...f, rawStatus: f.progress >= 100 ? '완료' : (f.progress > 0 ? '진행중' : (existing ? existing.rawStatus : '예정')), updated: iso(today) };
+      const rawStatus = f.progress >= 100 ? '완료' : (f.progress > 0 ? '진행중' : (existing ? existing.rawStatus : '예정'));
+      const payload = { ...f, rawStatus, completedDate: completedDateFor(existing, rawStatus, f.progress), updated: iso(today) };
       App.state.tasks = App.state.tasks.map(t => t.id === eid ? { ...t, ...payload } : t);
       App.state.modalOpen = false;
       App.actions.rerender();
       App.firebase.updateTask(eid, payload).catch(err => notifySaveError('업무', err));
       App.actions.upsertRuleForTask(eid, f);
     } else {
-      const payload = { ...f, rawStatus: f.progress >= 100 ? '완료' : (f.progress > 0 ? '진행중' : '예정'), updated: iso(today) };
+      const rawStatus = f.progress >= 100 ? '완료' : (f.progress > 0 ? '진행중' : '예정');
+      const payload = { ...f, rawStatus, completedDate: completedDateFor(null, rawStatus, f.progress), updated: iso(today) };
       App.state.modalOpen = false;
       App.actions.rerender();
       App.firebase.addTask(payload)
@@ -123,7 +137,8 @@ App.actions = {
     let payload = null;
     App.state.tasks = App.state.tasks.map(t => {
       if (t.id !== id) return t;
-      payload = { progress: v, rawStatus: v >= 100 ? '완료' : (v > 0 && t.rawStatus === '예정' ? '진행중' : t.rawStatus), updated: iso(today) };
+      const rawStatus = v >= 100 ? '완료' : (v > 0 && t.rawStatus === '예정' ? '진행중' : t.rawStatus);
+      payload = { progress: v, rawStatus, completedDate: completedDateFor(t, rawStatus, v), updated: iso(today) };
       return { ...t, ...payload };
     });
     App.actions.rerender();
@@ -135,7 +150,8 @@ App.actions = {
     let payload = null;
     App.state.tasks = App.state.tasks.map(t => {
       if (t.id !== id) return t;
-      payload = { rawStatus: v, progress: v === '완료' ? 100 : (v === '예정' ? 0 : t.progress), updated: iso(today) };
+      const progress = v === '완료' ? 100 : (v === '예정' ? 0 : t.progress);
+      payload = { rawStatus: v, progress, completedDate: completedDateFor(t, v, progress), updated: iso(today) };
       return { ...t, ...payload };
     });
     App.actions.rerender();
