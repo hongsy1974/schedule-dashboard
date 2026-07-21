@@ -143,7 +143,7 @@
         <div style="flex:1;min-width:0">
           <div style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</div>
           <div style="display:flex;align-items:center;gap:7px;margin-top:3px">
-            ${goalLinkBadge(t)}<span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+            <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${goalLinkBadge(t)}
             <span style="font-size:11.5px;color:#888">중요 ${t.impLabel} · 긴급 ${t.urgLabel}</span>
             <span style="${t.ddayStyle}">${t.ddayLabel}</span>
           </div>
@@ -456,7 +456,7 @@
         <div style="padding:6px 20px 14px">
           ${g.tasks.map(t => `
             <div data-action="openEdit" data-id="${t.id}" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F5F6F7;cursor:pointer">
-              ${goalLinkBadge(t)}<span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
+              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${goalLinkBadge(t)}
               <span style="font-size:13px;font-weight:500;flex:none;width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
               <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
                 <div style="height:100%;border-radius:4px;background:${t.barColor};width: ${t.progress}%"></div>
