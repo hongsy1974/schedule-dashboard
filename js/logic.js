@@ -69,7 +69,13 @@ App.logic = {
     else { label = 'D-' + dd; }
     const urgent = (dd <= 3 && st !== '완료');
     const color = (over && st !== '완료') ? RED : (urgent ? P : SUB);
-    return { label, color, over, style: `font-size:11px;font-weight:700;color:${color}` };
+    // D-DAY gets the same peach-chip treatment as today's column on the
+    // weekly calendar, instead of just colored text like every other case.
+    const isDday = dd === 0 && st !== '완료';
+    const style = isDday
+      ? `font-size:11px;font-weight:800;color:${P};background:#FFF4EC;padding:2px 8px;border-radius:5px;display:inline-block`
+      : `font-size:11px;font-weight:700;color:${color}`;
+    return { label, color, over, style };
   },
 
   typeBadge(type) {
