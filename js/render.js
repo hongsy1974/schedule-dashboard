@@ -456,7 +456,7 @@
         <div style="padding:6px 20px 14px">
           ${g.tasks.map(t => `
             <div data-action="openEdit" data-id="${t.id}" style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F5F6F7;cursor:pointer">
-              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}${goalLinkBadge(t)}
+              ${goalLinkBadge(t)}<span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
               <span style="font-size:13px;font-weight:500;flex:none;width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
               <div style="flex:1;height:7px;background:#EEF0F2;border-radius:4px;overflow:hidden">
                 <div style="height:100%;border-radius:4px;background:${t.barColor};width: ${t.progress}%"></div>
