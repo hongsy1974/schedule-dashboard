@@ -63,6 +63,10 @@ App.computeViewModel = function (state) {
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
   const durationDays = (t) => Math.round((parse(t.due) - parse(t.start)) / 86400000) + 1;
+  // Legacy records may still carry the raw type:'recurring' (pre-checkbox
+  // migration) on S.tasks — decorate() folds that into 지속 for display, but
+  // this weekly section reads S.tasks directly, so it has to check both.
+  const isOngoing = (t) => t.type === 'ongoing' || t.type === 'recurring';
 
   // Only genuinely long-running tasks (10+ days) get a horizontal bar spanning
   // their date range; anything shorter reads better as a normal chip under its
@@ -73,7 +77,7 @@ App.computeViewModel = function (state) {
   // running task, not a scheduled block of days.
   const LONG_DURATION_DAYS = 10;
   const multiDayCandidates = S.tasks
-    .filter(t => statusOf(today, t) !== '완료' && t.type !== 'ongoing' && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
+    .filter(t => statusOf(today, t) !== '완료' && !isOngoing(t) && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
     .sort((a, b) => parse(a.start) - parse(b.start));
   const laneEnds = [];
   const weekBars = [];
@@ -104,7 +108,7 @@ App.computeViewModel = function (state) {
     // bar threshold) repeat in every day cell they cover so the span still
     // reads as connected without needing a dedicated lane. 지속 업무 is the
     // exception — always shown once, on its 종료일 only.
-    const dayTasks = weekActiveTasks.filter(t => (t.type === 'ongoing' || t.start === t.due)
+    const dayTasks = weekActiveTasks.filter(t => (isOngoing(t) || t.start === t.due)
       ? t.due === key
       : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key));
     const items = dayTasks.slice(0, 4).map(t => {
