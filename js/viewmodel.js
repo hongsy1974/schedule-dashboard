@@ -248,19 +248,22 @@ App.computeViewModel = function (state) {
     };
   });
 
-  // rules
-  const ruleRows = S.rules.map(r => {
-    let next = '—', nextColor = '#666';
-    if (r.active) {
-      const dt = addDays(today, r.cycle === '매월' ? 12 : r.cycle === '매분기' ? 34 : (r.name.includes('연말') ? 174 : 203));
-      next = iso(dt).replace(/-/g, '.');
-    } else { next = '비활성'; nextColor = '#bbb'; }
-    return {
-      ...r, nextGen: next, nextColor,
-      toggleStyle: `width:42px;height:23px;border-radius:12px;border:none;cursor:pointer;position:relative;background:${r.active ? P : '#cfd2d6'};transition:background .15s`,
-      knobStyle: `position:absolute;top:2px;left:${r.active ? '21px' : '2px'};width:19px;height:19px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)`
-    };
-  });
+  // rules — 규칙명/주기/생성 시점 are auto-filled from the task modal's 반복
+  // checkbox (see actions.upsertRuleForTask); 다음 생성 예정일 and 활성 stay
+  // manual here. Active rules sort first, then within each group by 다음
+  // 생성 예정일 (soonest first, undated ones last).
+  const ruleRows = [...S.rules].sort((a, b) => {
+    if (!!a.active !== !!b.active) return a.active ? -1 : 1;
+    if (!a.nextDue && !b.nextDue) return 0;
+    if (!a.nextDue) return 1;
+    if (!b.nextDue) return -1;
+    return parse(a.nextDue) - parse(b.nextDue);
+  }).map(r => ({
+    ...r,
+    genPointLabel: r.genPoint ? `${mdLabel(parse(r.genPoint))}부터` : '—',
+    toggleStyle: `width:42px;height:23px;border-radius:12px;border:none;cursor:pointer;position:relative;background:${r.active ? P : '#cfd2d6'};transition:background .15s`,
+    knobStyle: `position:absolute;top:2px;left:${r.active ? '21px' : '2px'};width:19px;height:19px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.25)`
+  }));
 
   // modal form
   const f = S.form || {};

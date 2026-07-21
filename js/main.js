@@ -97,6 +97,7 @@
     if (action === 'setSort') App.actions.setSort(el.value);
     else if (action === 'setRowProgress') App.actions.setProgress(el.dataset.id, +el.value);
     else if (action === 'setRowStatus') App.actions.setStatus(el.dataset.id, el.value);
+    else if (action === 'setRuleNextDue') App.actions.setRuleNextDue(el.dataset.id, el.value);
     else if (action === 'fType') App.actions.setForm('type', el.value);
     else if (action === 'fGoal') App.actions.setForm('goalId', el.value);
     else if (action === 'fIsRecur') App.actions.setForm('recur', el.checked ? '매월' : '');

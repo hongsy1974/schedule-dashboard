@@ -90,11 +90,14 @@ App.actions = {
       App.state.modalOpen = false;
       App.actions.rerender();
       App.firebase.updateTask(eid, payload).catch(err => notifySaveError('업무', err));
+      App.actions.upsertRuleForTask(eid, f);
     } else {
       const payload = { ...f, rawStatus: f.progress >= 100 ? '완료' : (f.progress > 0 ? '진행중' : '예정'), updated: iso(today) };
       App.state.modalOpen = false;
       App.actions.rerender();
-      App.firebase.addTask(payload).catch(err => notifySaveError('업무', err));
+      App.firebase.addTask(payload)
+        .then(ref => App.actions.upsertRuleForTask(ref.id, f))
+        .catch(err => notifySaveError('업무', err));
     }
   },
 
@@ -148,6 +151,33 @@ App.actions = {
     });
     App.actions.rerender();
     if (active !== null) App.firebase.updateRule(id, { active }).catch(err => notifySaveError('반복 규칙', err));
+  },
+
+  setRuleNextDue(id, value) {
+    App.state.rules = App.state.rules.map(r => r.id === id ? { ...r, nextDue: value } : r);
+    App.actions.rerender();
+    App.firebase.updateRule(id, { nextDue: value }).catch(err => notifySaveError('반복 규칙', err));
+  },
+
+  // Keeps 반복 일정 in sync with the task modal: 규칙명/주기/생성 시점 mirror
+  // the task's 업무명/반복 주기/시작일 every time it's saved with 반복 checked.
+  // 다음 생성 예정일 and 활성 are left alone here — those are only ever set
+  // manually on the 반복 일정 page.
+  upsertRuleForTask(taskId, f) {
+    if (!f.recur) return;
+    const existing = App.state.rules.find(r => r.taskId === taskId);
+    if (existing) {
+      const payload = { name: f.name.trim(), cycle: f.recur, genPoint: f.start };
+      App.state.rules = App.state.rules.map(r => r.id === existing.id ? { ...r, ...payload } : r);
+      App.actions.rerender();
+      App.firebase.updateRule(existing.id, payload).catch(err => notifySaveError('반복 규칙', err));
+    } else {
+      const payload = { name: f.name.trim(), cycle: f.recur, genPoint: f.start, alertDays: 3, nextDue: null, active: true, taskId };
+      App.firebase.addRule(payload).then(ref => {
+        App.state.rules = [...App.state.rules, { id: ref.id, ...payload }];
+        App.actions.rerender();
+      }).catch(err => notifySaveError('반복 규칙 등록', err));
+    }
   },
 
   openNewGoal() {

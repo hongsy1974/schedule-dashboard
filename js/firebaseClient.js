@@ -44,6 +44,9 @@ window.App.firebase = {
   deleteTask(id) {
     return deleteDoc(doc(db, 'tasks', id));
   },
+  addRule(payload) {
+    return addDoc(collection(db, 'rules'), payload);
+  },
   updateRule(id, payload) {
     return updateDoc(doc(db, 'rules', id), payload);
   },

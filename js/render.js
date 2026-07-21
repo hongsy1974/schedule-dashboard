@@ -385,9 +385,11 @@
       <div style="display:grid;grid-template-columns:1.8fr 1fr 1.4fr .9fr 1.3fr .8fr;border-bottom:1px solid #F2F3F5;align-items:center;font-size:13px">
         <div style="padding:13px 16px;font-weight:500">${esc(r.name)}</div>
         <div style="padding:13px 8px"><span style="background:#F5F6F7;border:1px solid #E3E5E8;color:#666;font-size:11.5px;padding:2px 9px;border-radius:4px">${r.cycle}</span></div>
-        <div style="padding:13px 8px;color:#666">${esc(r.genPoint)}</div>
+        <div style="padding:13px 8px;color:#666">${esc(r.genPointLabel)}</div>
         <div style="padding:13px 8px;text-align:center;color:#666">${r.alertDays}일 전</div>
-        <div style="padding:13px 8px;font-weight:700;color:${r.nextColor}">${r.nextGen}</div>
+        <div style="padding:13px 8px">
+          <input type="date" data-action="setRuleNextDue" data-id="${r.id}" value="${r.nextDue || ''}" style="border:1px solid #E3E5E8;border-radius:6px;padding:5px 7px;font-size:12.5px;color:#333">
+        </div>
         <div style="padding:13px 8px;display:flex;justify-content:center">
           <button data-action="toggleRule" data-id="${r.id}" style="${r.toggleStyle}"><span style="${r.knobStyle}"></span></button>
         </div>

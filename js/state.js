@@ -6,6 +6,7 @@ App.firebase = {
   addTask: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   updateTask: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   deleteTask: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
+  addRule: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   updateRule: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   addGoal: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
   updateGoal: () => Promise.reject(new Error('Firebase가 아직 초기화되지 않았습니다')),
