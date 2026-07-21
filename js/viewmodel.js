@@ -68,9 +68,12 @@ App.computeViewModel = function (state) {
   // their date range; anything shorter reads better as a normal chip under its
   // due date (like a single-day item), so it only gets a lane below once it's
   // actually long enough to benefit from being shown connected.
+  // 지속 업무 (ongoing) is always anchored to just its 종료일 in the weekly
+  // view instead of spanning/repeating across its full date range — it's a
+  // running task, not a scheduled block of days.
   const LONG_DURATION_DAYS = 10;
   const multiDayCandidates = S.tasks
-    .filter(t => statusOf(today, t) !== '완료' && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
+    .filter(t => statusOf(today, t) !== '완료' && t.type !== 'ongoing' && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
     .sort((a, b) => parse(a.start) - parse(b.start));
   const laneEnds = [];
   const weekBars = [];
@@ -99,8 +102,10 @@ App.computeViewModel = function (state) {
     const weekend = i >= 5;
     // Single-day tasks show on their one day; short multi-day tasks (under the
     // bar threshold) repeat in every day cell they cover so the span still
-    // reads as connected without needing a dedicated lane.
-    const dayTasks = weekActiveTasks.filter(t => t.start === t.due ? t.due === key
+    // reads as connected without needing a dedicated lane. 지속 업무 is the
+    // exception — always shown once, on its 종료일 only.
+    const dayTasks = weekActiveTasks.filter(t => (t.type === 'ongoing' || t.start === t.due)
+      ? t.due === key
       : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key));
     const items = dayTasks.slice(0, 4).map(t => {
       const c = statusOf(today, t) === '지연' ? RED : P;
