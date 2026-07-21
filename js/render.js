@@ -143,7 +143,7 @@
         <div style="flex:1;min-width:0">
           <div style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</div>
           <div style="display:flex;align-items:center;gap:7px;margin-top:3px">
-            <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}${goalLinkBadge(t)}
+            ${goalLinkBadge(t)}<span style="${t.typeBadgeStyle}">${t.typeLabel}</span>
             <span style="font-size:11.5px;color:#888">중요 ${t.impLabel} · 긴급 ${t.urgLabel}</span>
             <span style="${t.ddayStyle}">${t.ddayLabel}</span>
           </div>
