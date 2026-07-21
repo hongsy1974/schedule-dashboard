@@ -1,6 +1,7 @@
 (function () {
   const esc = App.util.esc;
   const P = App.const.P;
+  const BLUE = '#3f6fb5';
   // Shared frame height for every non-home page's main content area, matching how
   // tall the home dashboard's grid (목표 달성 현황 + 주간 일정 + 월간 일정 stacked)
   // typically renders, so switching between menu tabs doesn't jump around in size.
@@ -372,10 +373,10 @@
       <div style="font-size:12.5px;color:#888;margin-top:3px">중요도 × 긴급도 4분면 · 완료 업무 제외</div>
     </div>
     <div style="display:grid;grid-template-columns:34px 1fr 1fr;grid-template-rows:34px 1fr 1fr;gap:10px;height:${MAIN_HEIGHT}px">
-      <div style="grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 높음 →</div>
-      <div style="grid-column:3;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#888">긴급도 낮음</div>
-      <div style="grid-column:1;grid-row:2;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#888">중요도 높음 ↑</div>
-      <div style="grid-column:1;grid-row:3;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:12.5px;font-weight:700;color:#bbb">중요도 낮음</div>
+      <div style="grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:${P}">긴급도 높음</div>
+      <div style="grid-column:3;grid-row:1;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:${BLUE}">긴급도 낮음</div>
+      <div style="grid-column:1;grid-row:2;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:19px;font-weight:700;color:${P}">중요도 높음</div>
+      <div style="grid-column:1;grid-row:3;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:19px;font-weight:700;color:${BLUE}">중요도 낮음</div>
       ${boxes}
     </div>`;
   }
