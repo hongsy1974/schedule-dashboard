@@ -62,6 +62,7 @@
         App.actions.addMemoEntry(dateEl.value, textEl.value);
         break;
       }
+      case 'removeMemoEntry': App.actions.removeMemoEntry(+el.dataset.value); break;
       case 'prevWeek': App.actions.prevWeek(); break;
       case 'nextWeek': App.actions.nextWeek(); break;
       case 'thisWeek': App.actions.thisWeek(); break;

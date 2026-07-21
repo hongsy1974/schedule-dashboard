@@ -538,9 +538,10 @@
             <label style="${lblStyle}">진행 메모 (날짜별 기록)</label>
             <div style="border:1px solid #E3E5E8;border-radius:7px;max-height:150px;overflow:auto;background:#FAFBFC">
               ${(f.memoLog || []).length ? f.memoLog.map((entry, i) => `
-              <div style="padding:8px 12px;display:flex;gap:10px;${i < f.memoLog.length - 1 ? 'border-bottom:1px solid #EEF0F2' : ''}">
+              <div style="padding:8px 12px;display:flex;align-items:flex-start;gap:10px;${i < f.memoLog.length - 1 ? 'border-bottom:1px solid #EEF0F2' : ''}">
                 <span style="font-size:11.5px;color:#888;font-weight:700;flex:none;width:40px">${esc(entry.date.slice(5).replace('-', '/'))}</span>
                 <span style="font-size:12.5px;color:#333;flex:1;min-width:0;white-space:pre-wrap;word-break:break-word">${esc(entry.text)}</span>
+                <button data-action="removeMemoEntry" data-value="${i}" title="삭제" style="border:none;background:none;color:#bbb;font-size:15px;cursor:pointer;flex:none;line-height:1;padding:0">×</button>
               </div>`).join('') : `<div style="font-size:12px;color:#bbb;padding:14px;text-align:center">기록된 메모가 없습니다</div>`}
             </div>
             <div style="display:flex;gap:8px;margin-top:8px">

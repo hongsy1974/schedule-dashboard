@@ -65,6 +65,11 @@ App.actions = {
     App.actions.rerender();
   },
 
+  removeMemoEntry(index) {
+    App.state.form = { ...App.state.form, memoLog: (App.state.form.memoLog || []).filter((_, i) => i !== index) };
+    App.actions.rerender();
+  },
+
   closeModal() { App.state.modalOpen = false; App.actions.rerender(); },
   setForm(k, v) { App.state.form = { ...App.state.form, [k]: v }; App.actions.rerender(); },
   // Same as setForm, but skips the rerender. Used for freeform text fields
