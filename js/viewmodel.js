@@ -36,7 +36,7 @@ App.computeViewModel = function (state) {
   const workActive = active.filter(t => t.type !== 'personal');
 
   // nav
-  const navDefs = [['home', '홈'], ['tasks', '업무 목록'], ['matrix', '매트릭스'], ['recurring', '반복 일정'], ['goals', '연간 목표']];
+  const navDefs = [['home', '홈'], ['goals', '연간 목표'], ['tasks', '업무 목록'], ['recurring', '반복 일정'], ['matrix', '매트릭스']];
   const navItems = navDefs.map(([v, l]) => ({ view: v, label: l, active: S.view === v }));
 
   // alerts
