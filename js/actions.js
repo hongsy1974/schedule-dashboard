@@ -15,6 +15,13 @@ App.actions = {
   thisMonth() { App.state.monthOffset = 0; App.actions.rerender(); },
   setSort(v) { App.state.sortBy = v; App.actions.rerender(); },
   setFilter(k, v) { App.state[k] = v; App.actions.rerender(); },
+  // Home dashboard "더보기" links: jump to 업무 목록 with that card's 유형 filter
+  // already applied, instead of landing on the unfiltered list.
+  goToTasksFiltered(type) {
+    App.state.view = 'tasks';
+    App.state.filterType = type;
+    App.actions.rerender();
+  },
 
   openNew() {
     const today = App.today, iso = App.util.iso, addDays = App.util.addDays;

@@ -179,7 +179,7 @@
           <span style="font-size:15.5px;font-weight:700">개인 일정</span>
           <span style="font-size:12px;color:#888">${vm.personalCards.length}건</span>
         </div>
-        <button data-action="setView" data-value="tasks" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
+        <button data-action="goToTasksFiltered" data-value="personal" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
       </div>
       <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;${listExtra}">
         ${cards || `<div style="font-size:12px;color:#bbb;padding:16px 4px;text-align:center">등록된 개인 일정이 없습니다</div>`}
@@ -238,7 +238,7 @@
           <span style="font-size:15.5px;font-weight:700">지속 업무 진행률</span>
           <span style="font-size:12px;color:#888">진행 중 ${vm.ongoingCount}건</span>
         </div>
-        <button data-action="setView" data-value="tasks" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
+        <button data-action="goToTasksFiltered" data-value="ongoing" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
       </div>
       <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;${listExtra}">${cards}</div>
     </div>`;

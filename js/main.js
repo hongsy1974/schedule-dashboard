@@ -55,6 +55,7 @@
     const action = el.dataset.action;
     switch (action) {
       case 'setView': App.actions.setView(el.dataset.value); break;
+      case 'goToTasksFiltered': App.actions.goToTasksFiltered(el.dataset.value); break;
       case 'prevWeek': App.actions.prevWeek(); break;
       case 'nextWeek': App.actions.nextWeek(); break;
       case 'thisWeek': App.actions.thisWeek(); break;
