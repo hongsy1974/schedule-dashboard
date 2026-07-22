@@ -155,7 +155,7 @@
   .day-more { font-size: 8px; color: rgba(255,255,255,.45); padding-left: 2px; }
 
   #week {
-    flex: 1;
+    flex: none;
     display: flex;
     flex-direction: column;
     padding: 0 10px 6px;
@@ -200,15 +200,21 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     cursor: pointer;
   }
+  /* 사이트의 주간 일정처럼 날짜 칸 영역을 고정 높이로 — flex:1로 남는 공간을
+     채우게 두면 창 아래로 불필요하게 길게 늘어나 보인다. */
   #week-items {
-    flex: 1;
+    flex: none;
+    height: 84px;
+    align-content: start;
     row-gap: 3px;
     overflow: hidden;
   }
   .week-day-col {
     display: flex; flex-direction: column; gap: 3px; min-width: 0;
+    height: 100%;
     border-radius: 6px;
     padding: 2px;
+    overflow: hidden;
   }
   .week-day-col.today { background: rgba(243,115,33,.08); }
   .week-item {

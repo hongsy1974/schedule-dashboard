@@ -7,7 +7,7 @@ const SITE_URL = 'https://hongsy1974.github.io/schedule-dashboard/';
 // 보이도록 훨씬 넓게 — 두 모드는 폭이 크게 다르므로 뷰 전환 시 창 자체를 다시 그림.
 const SIZES = {
   list: { width: 340, height: 480 },
-  week: { width: 640, height: 460 },
+  week: { width: 640, height: 340 },
   month: { width: 640, height: 560 },
 };
 const COLLAPSED_HEIGHT = 50;
