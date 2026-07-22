@@ -23,10 +23,10 @@
     display: flex;
     flex-direction: column;
     border-radius: 16px;
-    background: linear-gradient(160deg, rgba(32,28,24,.86), rgba(18,16,13,.92));
-    border: 1px solid rgba(255,255,255,.14);
-    box-shadow: 0 18px 40px rgba(0,0,0,.45);
-    color: #fff;
+    background: #fff;
+    border: 1px solid #E3E5E8;
+    box-shadow: 0 12px 28px rgba(0,0,0,.16), 0 2px 6px rgba(0,0,0,.08);
+    color: #333;
     -webkit-app-region: drag;
   }
 
@@ -39,7 +39,7 @@
   }
   .brand { font-size: 14px; font-weight: 800; letter-spacing: .1px; }
   .brand b { color: #F37321; }
-  #date { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+  #date { font-size: 11px; color: #888; margin-top: 2px; }
   .head-left { display: flex; flex-direction: column; }
 
   .head-btns { display: flex; gap: 6px; }
@@ -47,19 +47,19 @@
     -webkit-app-region: no-drag;
     width: 22px; height: 22px;
     border-radius: 6px;
-    border: none;
-    background: rgba(255,255,255,.08);
-    color: rgba(255,255,255,.7);
+    border: 1px solid #E3E5E8;
+    background: #fff;
+    color: #888;
     font-size: 13px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .icon-btn:hover { background: rgba(255,255,255,.16); color: #fff; }
+  .icon-btn:hover { background: #ECEDEF; color: #333; }
 
   #sub {
     padding: 0 14px 10px;
     font-size: 11.5px;
-    color: rgba(255,255,255,.5);
+    color: #888;
     display: flex; align-items: center; gap: 6px;
     flex: none;
   }
@@ -73,7 +73,7 @@
     -webkit-app-region: no-drag;
   }
   #list::-webkit-scrollbar { width: 6px; }
-  #list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.18); border-radius: 3px; }
+  #list::-webkit-scrollbar-thumb { background: #cfd2d6; border-radius: 3px; }
 
   .row {
     display: flex; align-items: center; gap: 9px;
@@ -81,25 +81,25 @@
     border-radius: 8px;
     cursor: pointer;
   }
-  .row:hover { background: rgba(255,255,255,.06); }
+  .row:hover { background: #F4F6F8; }
   .bar { width: 4px; height: 26px; border-radius: 2px; flex: none; }
   .row-main { flex: 1; min-width: 0; }
   .row-name {
-    font-size: 12.5px; font-weight: 600; color: rgba(255,255,255,.94);
+    font-size: 12.5px; font-weight: 600; color: #222;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .row-meta { font-size: 10.5px; color: rgba(255,255,255,.45); margin-top: 2px; }
+  .row-meta { font-size: 10.5px; color: #888; margin-top: 2px; }
   .row-dd {
-    font-size: 10.5px; font-weight: 800; color: rgba(255,255,255,.6);
+    font-size: 10.5px; font-weight: 800; color: #888;
     flex: none;
   }
   .row-dd.today {
-    color: #F37321; background: rgba(243,115,33,.18);
+    color: #F37321; background: rgba(243,115,33,.14);
     padding: 2px 7px; border-radius: 5px;
   }
-  .row-dd.over { color: #FF6B5E; }
+  .row-dd.over { color: #E53935; }
 
-  .icon-btn.active { background: rgba(243,115,33,.25); color: #F37321; }
+  .icon-btn.active { background: #FFF4EC; color: #F37321; border-color: #F37321; }
 
   #month {
     flex: 1;
@@ -122,7 +122,7 @@
   .dow-cell {
     text-align: center;
     font-size: 9.5px; font-weight: 700;
-    color: rgba(255,255,255,.4);
+    color: #888;
     padding-bottom: 4px;
   }
   /* Wider 달력 view (see main.js SIZES.month) leaves enough room per column
@@ -137,10 +137,10 @@
     cursor: pointer;
     overflow: hidden;
   }
-  .day-cell:hover { background: rgba(255,255,255,.06); }
-  .day-cell.outside .day-num { color: rgba(255,255,255,.25); }
+  .day-cell:hover { background: #F4F6F8; }
+  .day-cell.outside .day-num { color: #ccc; }
   .day-num {
-    font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.8);
+    font-size: 10.5px; font-weight: 600; color: #333;
     width: 16px; height: 16px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     flex: none;
@@ -152,7 +152,7 @@
     border-radius: 3px; border-left: 2px solid;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .day-more { font-size: 8px; color: rgba(255,255,255,.45); padding-left: 2px; }
+  .day-more { font-size: 8px; color: #999; padding-left: 2px; }
 
   #week {
     flex: none;
@@ -180,9 +180,9 @@
     gap: 2px;
     padding-bottom: 6px;
   }
-  .wd-name { font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.4); }
+  .wd-name { font-size: 9.5px; font-weight: 700; color: #888; }
   .wd-num {
-    font-size: 11px; font-weight: 700; color: rgba(255,255,255,.85);
+    font-size: 11px; font-weight: 700; color: #333;
     width: 18px; height: 18px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
   }
@@ -226,9 +226,9 @@
 
   #empty, #loading, #error {
     padding: 30px 16px; text-align: center;
-    font-size: 12px; color: rgba(255,255,255,.5); line-height: 1.6;
+    font-size: 12px; color: #888; line-height: 1.6;
   }
-  #error { color: #FF8A7A; }
+  #error { color: #E53935; }
 
   #foot {
     flex: none;
@@ -237,13 +237,13 @@
   #open-site {
     -webkit-app-region: no-drag;
     width: 100%; height: 30px;
-    border: 1px solid rgba(255,255,255,.18);
-    background: rgba(255,255,255,.06);
-    color: rgba(255,255,255,.85);
+    border: 1px solid #E3E5E8;
+    background: #fff;
+    color: #333;
     font-size: 11.5px; font-weight: 700;
     border-radius: 8px; cursor: pointer;
   }
-  #open-site:hover { background: rgba(255,255,255,.12); }
+  #open-site:hover { background: #F4F5F6; }
 
   /* Collapsed: only the header bar remains, everything else stays fully
      hidden (not just clipped) so there's no stray scrollbar or partial row. */
