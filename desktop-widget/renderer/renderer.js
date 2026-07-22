@@ -57,22 +57,50 @@ const els = {
   empty: document.getElementById('empty'),
   error: document.getElementById('error'),
   list: document.getElementById('list'),
+  month: document.getElementById('month'),
+  monthLabel: document.getElementById('month-label'),
+  monthDow: document.getElementById('month-dow'),
+  monthCells: document.getElementById('month-cells'),
   btnClose: document.getElementById('btn-close'),
   btnMore: document.getElementById('btn-more'),
+  btnViewList: document.getElementById('btn-view-list'),
+  btnViewMonth: document.getElementById('btn-view-month'),
+  btnPrevMonth: document.getElementById('btn-prev-month'),
+  btnNextMonth: document.getElementById('btn-next-month'),
+  btnTodayMonth: document.getElementById('btn-today-month'),
   openSite: document.getElementById('open-site'),
 };
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW[today.getDay()]})`;
+els.monthDow.innerHTML = DOW.map((d) => `<div class="dow-cell">${d}</div>`).join('');
+
+let latestTasks = [];
+let viewMode = localStorage.getItem('widgetView') === 'month' ? 'month' : 'list';
+let monthOffset = 0;
+
+function setViewMode(mode) {
+  viewMode = mode;
+  localStorage.setItem('widgetView', mode);
+  els.btnViewList.classList.toggle('active', mode === 'list');
+  els.btnViewMonth.classList.toggle('active', mode === 'month');
+  renderCurrent();
+}
 
 function show(which) {
   els.loading.style.display = which === 'loading' ? '' : 'none';
   els.empty.style.display = which === 'empty' ? '' : 'none';
   els.error.style.display = which === 'error' ? '' : 'none';
   els.list.style.display = which === 'list' ? '' : 'none';
+  els.month.style.display = which === 'month' ? '' : 'none';
 }
 
-function render(tasks) {
+function renderCurrent() {
+  if (viewMode === 'month') renderMonth(latestTasks);
+  else renderList(latestTasks);
+}
+
+function renderList(tasks) {
   const rows = tasks
     .filter((t) => t.type !== 'personal' && !isComplete(t))
     .sort((a, b) => score(b) - score(a) || dday(a.due) - dday(b.due))
@@ -98,6 +126,48 @@ function render(tasks) {
   show('list');
 }
 
+// A dot's color follows the same status priority as the website's monthly
+// calendar: 완료 first (so a finished task doesn't look like it's still
+// overdue), then 지연, then everything else in the brand color.
+function dotColor(t) {
+  if (isComplete(t)) return '#43A047';
+  if (dday(t.due) < 0) return '#E53935';
+  return '#F37321';
+}
+
+function renderMonth(tasks) {
+  const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+  els.monthLabel.textContent = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
+
+  const byDue = {};
+  tasks.forEach((t) => { if (t.due) (byDue[t.due] = byDue[t.due] || []).push(t); });
+
+  // 42-cell grid (6 weeks) starting from the Sunday on/before the 1st,
+  // matching the 일~토 header order.
+  const first = new Date(base.getFullYear(), base.getMonth(), 1);
+  const gridStart = new Date(first);
+  gridStart.setDate(first.getDate() - first.getDay());
+
+  const cells = [];
+  for (let i = 0; i < 42; i++) {
+    const dt = new Date(gridStart);
+    dt.setDate(gridStart.getDate() + i);
+    const key = iso(dt);
+    const inMonth = dt.getMonth() === base.getMonth();
+    const isToday = key === iso(today);
+    const dayTasks = byDue[key] || [];
+    const shown = dayTasks.slice(0, 3);
+    const more = dayTasks.length - shown.length;
+    cells.push(`
+      <div class="day-cell${inMonth ? '' : ' outside'}${isToday ? ' today' : ''}" data-date="${key}" title="${dayTasks.map((t) => t.name).join(', ')}">
+        <span class="day-num">${dt.getDate()}</span>
+        <span class="day-dots">${shown.map((t) => `<span class="day-dot" style="background:${dotColor(t)}"></span>`).join('')}${more > 0 ? `<span class="day-more">+${more}</span>` : ''}</span>
+      </div>`);
+  }
+  els.monthCells.innerHTML = cells.join('');
+  show('month');
+}
+
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -108,9 +178,20 @@ els.list.addEventListener('click', (e) => {
   const row = e.target.closest('.row');
   if (row) window.widget.openSite();
 });
+els.monthCells.addEventListener('click', (e) => {
+  const cell = e.target.closest('.day-cell');
+  if (cell) window.widget.openSite();
+});
 els.btnClose.addEventListener('click', () => window.widget.quit());
 els.btnMore.addEventListener('click', () => window.widget.showContextMenu());
 els.openSite.addEventListener('click', () => window.widget.openSite());
+els.btnViewList.addEventListener('click', () => setViewMode('list'));
+els.btnViewMonth.addEventListener('click', () => setViewMode('month'));
+els.btnPrevMonth.addEventListener('click', () => { monthOffset -= 1; renderMonth(latestTasks); });
+els.btnNextMonth.addEventListener('click', () => { monthOffset += 1; renderMonth(latestTasks); });
+els.btnTodayMonth.addEventListener('click', () => { monthOffset = 0; renderMonth(latestTasks); });
+
+setViewMode(viewMode);
 
 (async () => {
   try {
@@ -125,8 +206,8 @@ els.openSite.addEventListener('click', () => window.widget.openSite());
       (snapshot) => {
         els.connDot.classList.remove('off');
         els.connLabel.textContent = '실시간 연결됨';
-        const tasks = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-        render(tasks);
+        latestTasks = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        renderCurrent();
       },
       (err) => {
         console.error('[widget] Firestore 구독 실패:', err);

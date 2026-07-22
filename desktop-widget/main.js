@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 const SITE_URL = 'https://hongsy1974.github.io/schedule-dashboard/';
-const WIDGET_WIDTH = 300;
-const WIDGET_HEIGHT = 460;
+const WIDGET_WIDTH = 340;
+const WIDGET_HEIGHT = 480;
 const positionFile = path.join(app.getPath('userData'), 'window-position.json');
 
 // Only one copy of the widget at a time — a second launch just focuses the first.
