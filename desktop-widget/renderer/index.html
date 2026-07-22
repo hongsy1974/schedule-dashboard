@@ -154,6 +154,70 @@
   }
   .day-more { font-size: 8px; color: rgba(255,255,255,.45); padding-left: 2px; }
 
+  #week {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px 6px;
+    -webkit-app-region: no-drag;
+    overflow: hidden;
+  }
+  #week-head-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 2px 8px;
+    flex: none;
+  }
+  #week-label { font-size: 12.5px; font-weight: 700; }
+  #week-nav { display: flex; gap: 4px; }
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    column-gap: 4px;
+    flex: none;
+  }
+  .week-day-head {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 2px;
+    padding-bottom: 6px;
+  }
+  .wd-name { font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.4); }
+  .wd-num {
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,.85);
+    width: 18px; height: 18px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .week-day-head.today .wd-num { background: #F37321; color: #fff; }
+  /* 여러 날에 걸친 업무(10일 이상)는 사이트처럼 하나의 막대로 이어서 표시 —
+     겹치는 막대는 lane별로 쌓인다 (renderWeek의 그리디 lane 배치 참고). */
+  #week-bars {
+    min-height: 4px;
+    row-gap: 3px;
+    margin-bottom: 4px;
+  }
+  .week-bar {
+    font-size: 9px; line-height: 20px; padding: 0 6px;
+    border-radius: 4px; color: #1b1b1b; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer;
+  }
+  #week-items {
+    flex: 1;
+    row-gap: 3px;
+    overflow: hidden;
+  }
+  .week-day-col {
+    display: flex; flex-direction: column; gap: 3px; min-width: 0;
+    border-radius: 6px;
+    padding: 2px;
+  }
+  .week-day-col.today { background: rgba(243,115,33,.08); }
+  .week-item {
+    font-size: 9.5px; line-height: 15px; padding: 0 4px;
+    border-radius: 3px; border-left: 2px solid;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
   #empty, #loading, #error {
     padding: 30px 16px; text-align: center;
     font-size: 12px; color: rgba(255,255,255,.5); line-height: 1.6;
@@ -178,8 +242,8 @@
   /* Collapsed: only the header bar remains, everything else stays fully
      hidden (not just clipped) so there's no stray scrollbar or partial row. */
   body.collapsed #sub, body.collapsed #loading, body.collapsed #empty,
-  body.collapsed #error, body.collapsed #list, body.collapsed #month,
-  body.collapsed #foot { display: none !important; }
+  body.collapsed #error, body.collapsed #list, body.collapsed #week,
+  body.collapsed #month, body.collapsed #foot { display: none !important; }
   body.collapsed #card { border-radius: 12px; }
 </style>
 </head>
@@ -192,6 +256,7 @@
       </div>
       <div class="head-btns">
         <button class="icon-btn no-drag" id="btn-view-list" title="리스트 보기">📋</button>
+        <button class="icon-btn no-drag" id="btn-view-week" title="주간 보기">📆</button>
         <button class="icon-btn no-drag" id="btn-view-month" title="달력 보기">📅</button>
         <button class="icon-btn no-drag" id="btn-pin" title="항상 위에 표시">📌</button>
         <button class="icon-btn no-drag" id="btn-collapse" title="접기">▁</button>
@@ -204,6 +269,19 @@
     <div id="empty" style="display:none">지금 표시할 해야할 일이 없어요 🎉</div>
     <div id="error" style="display:none"></div>
     <div id="list" style="display:none"></div>
+    <div id="week" style="display:none">
+      <div id="week-head-row">
+        <span id="week-label"></span>
+        <div id="week-nav">
+          <button class="icon-btn no-drag" id="btn-prev-week" title="지난 주">‹</button>
+          <button class="icon-btn no-drag" id="btn-today-week" title="이번 주" style="font-size:10px">●</button>
+          <button class="icon-btn no-drag" id="btn-next-week" title="다음 주">›</button>
+        </div>
+      </div>
+      <div class="week-grid" id="week-head"></div>
+      <div class="week-grid" id="week-bars"></div>
+      <div class="week-grid" id="week-items"></div>
+    </div>
     <div id="month" style="display:none">
       <div id="month-head">
         <span id="month-label"></span>

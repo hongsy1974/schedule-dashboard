@@ -7,6 +7,7 @@ const SITE_URL = 'https://hongsy1974.github.io/schedule-dashboard/';
 // 보이도록 훨씬 넓게 — 두 모드는 폭이 크게 다르므로 뷰 전환 시 창 자체를 다시 그림.
 const SIZES = {
   list: { width: 340, height: 480 },
+  week: { width: 640, height: 460 },
   month: { width: 640, height: 560 },
 };
 const COLLAPSED_HEIGHT = 50;
@@ -74,6 +75,10 @@ function keepOnScreen(width, height) {
   if (clampedX !== x || clampedY !== y) win.setPosition(clampedX, clampedY);
 }
 
+function normalizeViewMode(mode) {
+  return (mode === 'month' || mode === 'week') ? mode : 'list';
+}
+
 function currentSize() {
   const base = SIZES[viewMode] || SIZES.list;
   return { width: base.width, height: collapsed ? COLLAPSED_HEIGHT : base.height };
@@ -83,7 +88,7 @@ function createWindow() {
   const saved = loadSettings();
   pinned = !!saved.pinned;
   collapsed = !!saved.collapsed;
-  viewMode = saved.viewMode === 'month' ? 'month' : 'list';
+  viewMode = normalizeViewMode(saved.viewMode);
 
   const { width, height } = currentSize();
   const pos = (Number.isFinite(saved.x) && Number.isFinite(saved.y)) ? { x: saved.x, y: saved.y } : defaultPosition(width);
@@ -158,10 +163,10 @@ ipcMain.handle('widget:set-collapsed', (event, next) => {
   return collapsed;
 });
 
-// 리스트 ↔ 달력 전환 — 달력은 사이트의 월간 일정처럼 업무명이 보이도록 폭이 훨씬
-// 넓어서, 뷰가 바뀔 때마다 창 크기 자체를 그 모드에 맞게 다시 잡아준다.
+// 리스트 ↔ 주간 ↔ 달력 전환 — 주간/달력은 사이트의 일정처럼 업무명이 보이도록 폭이
+// 훨씬 넓어서, 뷰가 바뀔 때마다 창 크기 자체를 그 모드에 맞게 다시 잡아준다.
 ipcMain.handle('widget:set-view-mode', (event, mode) => {
-  viewMode = mode === 'month' ? 'month' : 'list';
+  viewMode = normalizeViewMode(mode);
   const { width, height } = currentSize();
   applySize(width, height);
   saveSettings({ viewMode });

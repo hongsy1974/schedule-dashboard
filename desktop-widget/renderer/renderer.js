@@ -22,8 +22,17 @@ const MAX_ROWS = 12;
 const pad = (n) => String(n).padStart(2, '0');
 const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 const parse = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const today = (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; })();
 const dday = (due) => Math.round((parse(due) - today) / 86400000);
+const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
+const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
+const durationDays = (t) => Math.round((parse(t.due) - parse(t.start)) / 86400000) + 1;
+// Legacy records may still carry the raw type:'recurring' (pre-checkbox
+// migration on the website) — 지속 업무 is always anchored to its 종료일
+// instead of spanning/repeating, same as the website's weekly view.
+const isOngoing = (t) => t.type === 'ongoing' || t.type === 'recurring';
+const LONG_DURATION_DAYS = 10;
 
 // Mirrors App.logic.deadlineWeight/score from the website's js/logic.js, so
 // this widget ranks 해야할 일 exactly the same way the dashboard does.
@@ -57,6 +66,11 @@ const els = {
   empty: document.getElementById('empty'),
   error: document.getElementById('error'),
   list: document.getElementById('list'),
+  week: document.getElementById('week'),
+  weekLabel: document.getElementById('week-label'),
+  weekHead: document.getElementById('week-head'),
+  weekItems: document.getElementById('week-items'),
+  weekBars: document.getElementById('week-bars'),
   month: document.getElementById('month'),
   monthLabel: document.getElementById('month-label'),
   monthDow: document.getElementById('month-dow'),
@@ -64,7 +78,11 @@ const els = {
   btnClose: document.getElementById('btn-close'),
   btnMore: document.getElementById('btn-more'),
   btnViewList: document.getElementById('btn-view-list'),
+  btnViewWeek: document.getElementById('btn-view-week'),
   btnViewMonth: document.getElementById('btn-view-month'),
+  btnPrevWeek: document.getElementById('btn-prev-week'),
+  btnNextWeek: document.getElementById('btn-next-week'),
+  btnTodayWeek: document.getElementById('btn-today-week'),
   btnPrevMonth: document.getElementById('btn-prev-month'),
   btnNextMonth: document.getElementById('btn-next-month'),
   btnTodayMonth: document.getElementById('btn-today-month'),
@@ -73,12 +91,18 @@ const els = {
   openSite: document.getElementById('open-site'),
 };
 
-const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW[today.getDay()]})`;
-els.monthDow.innerHTML = DOW.map((d) => `<div class="dow-cell">${d}</div>`).join('');
+// Two different day-name orderings on purpose: the grid headers (weekly and
+// monthly calendars) match the website's 월요일-first layout, while looking
+// up "오늘이 무슨 요일" for the header date label needs Date#getDay()'s own
+// 일요일=0 ordering.
+const DOW_GRID = ['월', '화', '수', '목', '금', '토', '일'];
+const DOW_BY_GETDAY = ['일', '월', '화', '수', '목', '금', '토'];
+els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW_BY_GETDAY[today.getDay()]})`;
+els.monthDow.innerHTML = DOW_GRID.map((d) => `<div class="dow-cell">${d}</div>`).join('');
 
 let latestTasks = [];
 let viewMode = 'list';
+let weekOffset = 0;
 let monthOffset = 0;
 
 // Updates buttons + re-renders for the given mode, without touching the
@@ -88,12 +112,13 @@ let monthOffset = 0;
 function applyViewModeUI(mode) {
   viewMode = mode;
   els.btnViewList.classList.toggle('active', mode === 'list');
+  els.btnViewWeek.classList.toggle('active', mode === 'week');
   els.btnViewMonth.classList.toggle('active', mode === 'month');
   renderCurrent();
 }
 
-// 달력 view is much wider than 리스트 (to fit real task names like the
-// website's monthly calendar), so switching views resizes the actual window.
+// 주간/달력 views are much wider than 리스트 (to fit real task names like the
+// website's calendars), so switching views resizes the actual window.
 async function setViewMode(mode) {
   await window.widget.setViewMode(mode);
   applyViewModeUI(mode);
@@ -104,11 +129,13 @@ function show(which) {
   els.empty.style.display = which === 'empty' ? '' : 'none';
   els.error.style.display = which === 'error' ? '' : 'none';
   els.list.style.display = which === 'list' ? '' : 'none';
+  els.week.style.display = which === 'week' ? '' : 'none';
   els.month.style.display = which === 'month' ? '' : 'none';
 }
 
 function renderCurrent() {
-  if (viewMode === 'month') renderMonth(latestTasks);
+  if (viewMode === 'week') renderWeek(latestTasks);
+  else if (viewMode === 'month') renderMonth(latestTasks);
   else renderList(latestTasks);
 }
 
@@ -147,6 +174,63 @@ function statusColor(t) {
   return '#F37321';
 }
 
+// Same lane-stacking approach as the website's weekly view: multi-day tasks
+// long enough to earn a spanning bar (10+ days) are greedily packed into as
+// few horizontal lanes as possible so overlapping ones don't collide.
+function renderWeek(tasks) {
+  const wkStart = addDays(today, -((today.getDay() + 6) % 7) + weekOffset * 7);
+  const wkEnd = addDays(wkStart, 6);
+  els.weekLabel.textContent = `${wkStart.getMonth() + 1}/${wkStart.getDate()} – ${wkEnd.getMonth() + 1}/${wkEnd.getDate()}`;
+
+  const multiDayCandidates = tasks
+    .filter((t) => !isComplete(t) && !isOngoing(t) && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS
+      && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
+    .sort((a, b) => parse(a.start) - parse(b.start));
+  const laneEnds = [];
+  const bars = [];
+  multiDayCandidates.forEach((t) => {
+    const clipStart = parse(t.start) < wkStart ? wkStart : parse(t.start);
+    const clipEnd = parse(t.due) > wkEnd ? wkEnd : parse(t.due);
+    let lane = laneEnds.findIndex((end) => end < clipStart);
+    if (lane === -1) { lane = laneEnds.length; laneEnds.push(clipEnd); }
+    else laneEnds[lane] = clipEnd;
+    const colStart = Math.round((clipStart - wkStart) / 86400000);
+    const colEnd = Math.round((clipEnd - wkStart) / 86400000);
+    const c = statusColor(t);
+    bars.push(`
+      <div class="week-bar" data-id="${t.id}" title="${escapeHtml(t.name)}"
+        style="grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};background:${c}">
+        ${escapeHtml(t.name)}(${dateRangeLabel(t)})
+      </div>`);
+  });
+  const laneCount = Math.max(1, laneEnds.length);
+  els.weekBars.style.gridTemplateRows = `repeat(${laneCount}, 20px)`;
+  els.weekBars.innerHTML = bars.join('');
+
+  els.weekHead.innerHTML = DOW_GRID.map((dw, i) => {
+    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
+    return `<div class="week-day-head${isToday ? ' today' : ''}" data-date="${key}"><span class="wd-name">${dw}</span><span class="wd-num">${dt.getDate()}</span></div>`;
+  }).join('');
+
+  els.weekItems.innerHTML = DOW_GRID.map((dw, i) => {
+    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
+    const dayTasks = tasks.filter((t) => {
+      if (isComplete(t)) return (t.completedDate || t.updated) === key;
+      return (isOngoing(t) || t.start === t.due) ? t.due === key
+        : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
+    });
+    const shown = dayTasks.slice(0, 4);
+    const more = dayTasks.length - shown.length;
+    const chips = shown.map((t) => {
+      const c = statusColor(t);
+      return `<div class="week-item" data-id="${t.id}" title="${escapeHtml(t.name)}" style="background:${c}18;color:${c};border-left-color:${c}">${escapeHtml(t.name)}(${dateRangeLabel(t)})</div>`;
+    }).join('');
+    return `<div class="week-day-col${isToday ? ' today' : ''}" data-date="${key}">${chips}${more > 0 ? `<div class="day-more">+${more}</div>` : ''}</div>`;
+  }).join('');
+
+  show('week');
+}
+
 function renderMonth(tasks) {
   const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
   els.monthLabel.textContent = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
@@ -154,11 +238,11 @@ function renderMonth(tasks) {
   const byDue = {};
   tasks.forEach((t) => { if (t.due) (byDue[t.due] = byDue[t.due] || []).push(t); });
 
-  // 42-cell grid (6 weeks) starting from the Sunday on/before the 1st,
-  // matching the 일~토 header order.
+  // 42-cell grid (6 weeks) starting from the Monday on/before the 1st,
+  // matching the 월~일 header order used across the whole app.
   const first = new Date(base.getFullYear(), base.getMonth(), 1);
   const gridStart = new Date(first);
-  gridStart.setDate(first.getDate() - first.getDay());
+  gridStart.setDate(first.getDate() - ((first.getDay() + 6) % 7));
 
   const cells = [];
   for (let i = 0; i < 42; i++) {
@@ -196,6 +280,12 @@ els.list.addEventListener('click', (e) => {
   const row = e.target.closest('.row');
   if (row) window.widget.openSite();
 });
+els.weekItems.addEventListener('click', (e) => {
+  if (e.target.closest('.week-day-col')) window.widget.openSite();
+});
+els.weekBars.addEventListener('click', (e) => {
+  if (e.target.closest('.week-bar')) window.widget.openSite();
+});
 els.monthCells.addEventListener('click', (e) => {
   const cell = e.target.closest('.day-cell');
   if (cell) window.widget.openSite();
@@ -204,7 +294,11 @@ els.btnClose.addEventListener('click', () => window.widget.quit());
 els.btnMore.addEventListener('click', () => window.widget.showContextMenu());
 els.openSite.addEventListener('click', () => window.widget.openSite());
 els.btnViewList.addEventListener('click', () => setViewMode('list'));
+els.btnViewWeek.addEventListener('click', () => setViewMode('week'));
 els.btnViewMonth.addEventListener('click', () => setViewMode('month'));
+els.btnPrevWeek.addEventListener('click', () => { weekOffset -= 1; renderWeek(latestTasks); });
+els.btnNextWeek.addEventListener('click', () => { weekOffset += 1; renderWeek(latestTasks); });
+els.btnTodayWeek.addEventListener('click', () => { weekOffset = 0; renderWeek(latestTasks); });
 els.btnPrevMonth.addEventListener('click', () => { monthOffset -= 1; renderMonth(latestTasks); });
 els.btnNextMonth.addEventListener('click', () => { monthOffset += 1; renderMonth(latestTasks); });
 els.btnTodayMonth.addEventListener('click', () => { monthOffset = 0; renderMonth(latestTasks); });
@@ -240,7 +334,7 @@ window.widget.getState().then(({ pinned, collapsed, viewMode: savedMode }) => {
   // for `savedMode` before this page loaded, so this only needs to update
   // the UI/content to match — calling setViewMode() would resize it again
   // (harmlessly, but pointlessly) and fight any position clamping race.
-  applyViewModeUI(savedMode === 'month' ? 'month' : 'list');
+  applyViewModeUI(savedMode === 'month' ? 'month' : savedMode === 'week' ? 'week' : 'list');
 });
 
 (async () => {
