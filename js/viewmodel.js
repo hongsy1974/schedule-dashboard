@@ -150,9 +150,10 @@ App.computeViewModel = function (state) {
     });
   }
 
-  // 해야할 일 — every outstanding work item, ranked by score (no cap; the card
-  // has a fixed frame and scrolls internally instead of growing with the list)
-  const todoList = [...workActive].sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).map((t, i, arr) => ({
+  // 해야할 일 — outstanding work items due within the next month (30일 이내),
+  // ranked by score (no cap beyond that; the card has a fixed frame and
+  // scrolls internally instead of growing with the list)
+  const todoList = workActive.filter(t => dday(today, t.due) <= 30).sort((a, b) => b.score - a.score || dday(today, a.due) - dday(today, b.due)).map((t, i, arr) => ({
     ...t, rank: i + 1,
     rowStyle: `display:flex;align-items:center;gap:13px;padding:12px 18px;cursor:pointer;border-bottom:${i < arr.length - 1 ? '1px solid #F2F3F5' : 'none'}`,
     rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
