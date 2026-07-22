@@ -169,7 +169,7 @@
     const cards = vm.personalCards.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:8px 13px;cursor:pointer">
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}${goalLinkBadge(t)}
+          <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${goalLinkBadge(t)}${recurBadge(t)}
           <span style="font-size:13.5px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
           ${t.stalled ? `<span style="background:#FBECEC;color:#E53935;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px">정체</span>` : ''}
           <span style="${t.ddayStyle}">${t.ddayLabel}</span>
@@ -367,7 +367,7 @@
         <div style="display:flex;flex-direction:column;gap:6px;overflow:auto;flex:1">
           ${q.items.map(t => `
             <div data-action="openEdit" data-id="${t.id}" style="background:#fff;border:1px solid #EEF0F2;border-radius:6px;padding:8px 11px;cursor:pointer;display:flex;align-items:center;gap:8px">
-              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${recurBadge(t)}${goalLinkBadge(t)}
+              <span style="${t.typeBadgeStyle}">${t.typeLabel}</span>${goalLinkBadge(t)}${recurBadge(t)}
               <span style="font-size:12.5px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
               <span style="${t.ddayStyle}">${t.ddayLabel}</span>
               <span style="font-size:12px;font-weight:900;color:#F37321">${t.score}점</span>
