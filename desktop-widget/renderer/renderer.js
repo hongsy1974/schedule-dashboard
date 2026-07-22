@@ -78,15 +78,25 @@ els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW[
 els.monthDow.innerHTML = DOW.map((d) => `<div class="dow-cell">${d}</div>`).join('');
 
 let latestTasks = [];
-let viewMode = localStorage.getItem('widgetView') === 'month' ? 'month' : 'list';
+let viewMode = 'list';
 let monthOffset = 0;
 
-function setViewMode(mode) {
+// Updates buttons + re-renders for the given mode, without touching the
+// actual OS window size. Used both when the user picks a view (after the
+// resize IPC round-trip below) and on startup, where main.js has already
+// sized the window correctly before this page even loaded.
+function applyViewModeUI(mode) {
   viewMode = mode;
-  localStorage.setItem('widgetView', mode);
   els.btnViewList.classList.toggle('active', mode === 'list');
   els.btnViewMonth.classList.toggle('active', mode === 'month');
   renderCurrent();
+}
+
+// 달력 view is much wider than 리스트 (to fit real task names like the
+// website's monthly calendar), so switching views resizes the actual window.
+async function setViewMode(mode) {
+  await window.widget.setViewMode(mode);
+  applyViewModeUI(mode);
 }
 
 function show(which) {
@@ -128,10 +138,10 @@ function renderList(tasks) {
   show('list');
 }
 
-// A dot's color follows the same status priority as the website's monthly
-// calendar: 완료 first (so a finished task doesn't look like it's still
-// overdue), then 지연, then everything else in the brand color.
-function dotColor(t) {
+// Matches the website's monthly calendar item coloring: 완료 first (so a
+// finished task doesn't look like it's still overdue), then 지연, then the
+// brand color for everything else.
+function statusColor(t) {
   if (isComplete(t)) return '#43A047';
   if (dday(t.due) < 0) return '#E53935';
   return '#F37321';
@@ -158,12 +168,18 @@ function renderMonth(tasks) {
     const inMonth = dt.getMonth() === base.getMonth();
     const isToday = key === iso(today);
     const dayTasks = byDue[key] || [];
-    const shown = dayTasks.slice(0, 3);
+    // Same layout as the website's month cells: a couple of truncated
+    // task-name chips, plus a "+n" indicator for anything that doesn't fit.
+    const shown = dayTasks.slice(0, 2);
     const more = dayTasks.length - shown.length;
+    const items = shown.map((t) => {
+      const c = statusColor(t);
+      return `<div class="day-item" data-id="${t.id}" title="${escapeHtml(t.name)}" style="background:${c}22;color:${c};border-left-color:${c}">${escapeHtml(t.name)}</div>`;
+    }).join('');
     cells.push(`
-      <div class="day-cell${inMonth ? '' : ' outside'}${isToday ? ' today' : ''}" data-date="${key}" title="${dayTasks.map((t) => t.name).join(', ')}">
+      <div class="day-cell${inMonth ? '' : ' outside'}${isToday ? ' today' : ''}" data-date="${key}">
         <span class="day-num">${dt.getDate()}</span>
-        <span class="day-dots">${shown.map((t) => `<span class="day-dot" style="background:${dotColor(t)}"></span>`).join('')}${more > 0 ? `<span class="day-more">+${more}</span>` : ''}</span>
+        <div class="day-items">${items}${more > 0 ? `<div class="day-more">+${more}</div>` : ''}</div>
       </div>`);
   }
   els.monthCells.innerHTML = cells.join('');
@@ -213,16 +229,19 @@ els.btnCollapse.addEventListener('click', async () => {
   els.btnCollapse.title = collapsed ? '펼치기' : '접기';
 });
 
-window.widget.getState().then(({ pinned, collapsed }) => {
+window.widget.getState().then(({ pinned, collapsed, viewMode: savedMode }) => {
   applyPinState(pinned);
   if (collapsed) {
     document.body.classList.add('collapsed');
     els.btnCollapse.textContent = '▢';
     els.btnCollapse.title = '펼치기';
   }
+  // No resize here: main.js already created the window at the right size
+  // for `savedMode` before this page loaded, so this only needs to update
+  // the UI/content to match — calling setViewMode() would resize it again
+  // (harmlessly, but pointlessly) and fight any position clamping race.
+  applyViewModeUI(savedMode === 'month' ? 'month' : 'list');
 });
-
-setViewMode(viewMode);
 
 (async () => {
   try {
