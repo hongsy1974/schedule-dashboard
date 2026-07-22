@@ -68,6 +68,8 @@ const els = {
   btnPrevMonth: document.getElementById('btn-prev-month'),
   btnNextMonth: document.getElementById('btn-next-month'),
   btnTodayMonth: document.getElementById('btn-today-month'),
+  btnPin: document.getElementById('btn-pin'),
+  btnCollapse: document.getElementById('btn-collapse'),
   openSite: document.getElementById('open-site'),
 };
 
@@ -190,6 +192,35 @@ els.btnViewMonth.addEventListener('click', () => setViewMode('month'));
 els.btnPrevMonth.addEventListener('click', () => { monthOffset -= 1; renderMonth(latestTasks); });
 els.btnNextMonth.addEventListener('click', () => { monthOffset += 1; renderMonth(latestTasks); });
 els.btnTodayMonth.addEventListener('click', () => { monthOffset = 0; renderMonth(latestTasks); });
+
+function applyPinState(pinned) {
+  els.btnPin.classList.toggle('active', pinned);
+}
+els.btnPin.addEventListener('click', async () => {
+  const pinned = await window.widget.togglePin();
+  applyPinState(pinned);
+});
+window.widget.onPinChanged(applyPinState);
+
+// Collapsing shrinks the actual OS window to just the header bar (see
+// main.js) so the widget stops covering other work without having to quit
+// it outright; the button glyph flips between "collapse" and "expand".
+els.btnCollapse.addEventListener('click', async () => {
+  const next = !document.body.classList.contains('collapsed');
+  const collapsed = await window.widget.setCollapsed(next);
+  document.body.classList.toggle('collapsed', collapsed);
+  els.btnCollapse.textContent = collapsed ? '▢' : '▁';
+  els.btnCollapse.title = collapsed ? '펼치기' : '접기';
+});
+
+window.widget.getState().then(({ pinned, collapsed }) => {
+  applyPinState(pinned);
+  if (collapsed) {
+    document.body.classList.add('collapsed');
+    els.btnCollapse.textContent = '▢';
+    els.btnCollapse.title = '펼치기';
+  }
+});
 
 setViewMode(viewMode);
 

@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <title>WorkFlow 위젯</title>
 <style>
+  /* Sized to fill whatever the actual OS window is (percentage, not a fixed
+     px value) so main.js can shrink the window down to just the header bar
+     for the "collapse" feature without the page content getting clipped or
+     leaving dead space. */
   html, body {
     margin: 0; padding: 0;
-    width: 340px; height: 480px;
+    width: 100%; height: 100%;
     background: transparent;
     font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
     overflow: hidden;
@@ -161,6 +165,13 @@
     border-radius: 8px; cursor: pointer;
   }
   #open-site:hover { background: rgba(255,255,255,.12); }
+
+  /* Collapsed: only the header bar remains, everything else stays fully
+     hidden (not just clipped) so there's no stray scrollbar or partial row. */
+  body.collapsed #sub, body.collapsed #loading, body.collapsed #empty,
+  body.collapsed #error, body.collapsed #list, body.collapsed #month,
+  body.collapsed #foot { display: none !important; }
+  body.collapsed #card { border-radius: 12px; }
 </style>
 </head>
 <body>
@@ -173,6 +184,8 @@
       <div class="head-btns">
         <button class="icon-btn no-drag" id="btn-view-list" title="리스트 보기">📋</button>
         <button class="icon-btn no-drag" id="btn-view-month" title="달력 보기">📅</button>
+        <button class="icon-btn no-drag" id="btn-pin" title="항상 위에 표시">📌</button>
+        <button class="icon-btn no-drag" id="btn-collapse" title="접기">▁</button>
         <button class="icon-btn no-drag" id="btn-more" title="메뉴">⋯</button>
         <button class="icon-btn no-drag" id="btn-close" title="닫기">×</button>
       </div>
