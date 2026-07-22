@@ -165,8 +165,9 @@ App.computeViewModel = function (state) {
     prioBadge: `background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`
   }));
 
-  // 개인 일정 — 마감이 가장 가까운(임박한) 순으로 정렬
-  const personalCards = active.filter(t => t.type === 'personal').sort((a, b) => dday(today, a.due) - dday(today, b.due));
+  // 개인 일정 — 향후 1개월(30일) 이내인 것만, 마감이 가장 가까운(임박한) 순으로 정렬
+  const personalCards = active.filter(t => t.type === 'personal' && dday(today, t.due) <= 30)
+    .sort((a, b) => dday(today, a.due) - dday(today, b.due));
 
   // Goal status coloring: 'progress' mode compares value achieved vs time elapsed
   // (지연 위험 if behind schedule); numeric/count modes have no timeline to compare
