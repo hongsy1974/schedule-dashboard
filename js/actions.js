@@ -39,7 +39,7 @@ App.actions = {
     const today = App.today, iso = App.util.iso, addDays = App.util.addDays;
     App.state.modalOpen = true;
     App.state.editingId = null;
-    App.state.form = { name: '', desc: '', type: 'ongoing', start: iso(today), due: iso(addDays(today, 7)), imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memoLog: [] };
+    App.state.form = { name: '', desc: '', type: 'simple', start: iso(today), due: iso(addDays(today, 7)), imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memoLog: [] };
     App.actions.rerender();
   },
 
@@ -48,7 +48,7 @@ App.actions = {
   openNewOnDate(dateIso) {
     App.state.modalOpen = true;
     App.state.editingId = null;
-    App.state.form = { name: '', desc: '', type: 'ongoing', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memoLog: [] };
+    App.state.form = { name: '', desc: '', type: 'simple', start: dateIso, due: dateIso, imp: 2, urg: 2, recur: '', goalId: '', progress: 0, memoLog: [] };
     App.actions.rerender();
   },
 
