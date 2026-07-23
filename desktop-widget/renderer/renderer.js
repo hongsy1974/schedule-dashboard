@@ -207,7 +207,7 @@ function renderWeek(tasks) {
   // visually from the header/item rows above into the bar row below.
   const laneBg = DOW.map((_, i) => {
     const isToday = iso(addDays(wkStart, i)) === iso(today);
-    return `<div style="grid-column:${i + 1};grid-row:1 / ${laneCount + 1};border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFFBF7' : '#fff'}"></div>`;
+    return `<div style="grid-column:${i + 1};grid-row:1 / ${laneCount + 1};border-right:${i < 6 ? GRID_LINE : 'none'};border-bottom:${GRID_LINE};background:${isToday ? '#FFFBF7' : '#fff'}"></div>`;
   }).join('');
   els.weekBars.style.gridTemplateRows = `repeat(${laneCount}, 22px)`;
   els.weekBars.innerHTML = laneBg + bars.join('');
