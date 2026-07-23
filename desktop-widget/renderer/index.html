@@ -58,16 +58,6 @@
   }
   .icon-btn:hover { background: #ECEDEF; color: #333; }
 
-  #sub {
-    padding: 0 14px 10px;
-    font-size: 11.5px;
-    color: #888;
-    display: flex; align-items: center; gap: 6px;
-    flex: none;
-  }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: #43A047; flex: none; }
-  .dot.off { background: #E53935; }
-
   #list {
     flex: 1;
     overflow-y: auto;
@@ -121,6 +111,7 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
   }
+  #month-dow { background: #F4F5F7; }
   .dow-cell {
     text-align: center;
     font-size: 11px; font-weight: 700;
@@ -246,7 +237,7 @@
 
   /* Collapsed: only the header bar remains, everything else stays fully
      hidden (not just clipped) so there's no stray scrollbar or partial row. */
-  body.collapsed #sub, body.collapsed #loading, body.collapsed #empty,
+  body.collapsed #loading, body.collapsed #empty,
   body.collapsed #error, body.collapsed #list, body.collapsed #week,
   body.collapsed #month, body.collapsed #foot { display: none !important; }
   body.collapsed #card { border-radius: 12px; }
@@ -269,7 +260,6 @@
         <button class="icon-btn no-drag" id="btn-close" title="닫기">×</button>
       </div>
     </div>
-    <div id="sub"><span class="dot" id="conn-dot"></span><span id="conn-label">연결 중…</span></div>
     <div id="loading">불러오는 중…</div>
     <div id="empty" style="display:none">지금 표시할 해야할 일이 없어요 🎉</div>
     <div id="error" style="display:none"></div>

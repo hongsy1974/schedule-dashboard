@@ -60,8 +60,6 @@ const TYPE_LABEL = { ongoing: '지속', goal: '목표', simple: '단순', person
 
 const els = {
   date: document.getElementById('date'),
-  connDot: document.getElementById('conn-dot'),
-  connLabel: document.getElementById('conn-label'),
   loading: document.getElementById('loading'),
   empty: document.getElementById('empty'),
   error: document.getElementById('error'),
@@ -219,7 +217,7 @@ function renderWeek(tasks) {
     const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
     const dateColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#444');
     return `<div class="week-day-head" data-date="${key}"
-        style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#FAFBFC'}">
+        style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#E3E5E8'}">
         <span class="wd-name" style="color:${dowColor}">${dw}</span>
         <span class="wd-num" style="color:${dateColor};font-weight:${isToday ? 900 : 700}">${dt.getDate()}</span>
       </div>`;
@@ -368,23 +366,17 @@ window.widget.getState().then(({ pinned, collapsed, viewMode: savedMode }) => {
     onSnapshot(
       collection(db, 'tasks'),
       (snapshot) => {
-        els.connDot.classList.remove('off');
-        els.connLabel.textContent = '실시간 연결됨';
         latestTasks = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
         renderCurrent();
       },
       (err) => {
         console.error('[widget] Firestore 구독 실패:', err);
-        els.connDot.classList.add('off');
-        els.connLabel.textContent = '연결 실패';
         els.error.textContent = `데이터를 불러오지 못했어요.\n인터넷 연결을 확인해 주세요.\n(${err.message})`;
         show('error');
       }
     );
   } catch (err) {
     console.error('[widget] 초기화 실패:', err);
-    els.connDot.classList.add('off');
-    els.connLabel.textContent = '연결 실패';
     els.error.textContent = `초기화 중 오류가 발생했어요.\n(${err.message})`;
     show('error');
   }
