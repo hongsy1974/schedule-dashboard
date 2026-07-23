@@ -57,16 +57,20 @@ function ddayLabel(t) {
 const TYPE_LABEL = { ongoing: '지속', goal: '목표', simple: '단순', personal: '개인', recurring: '지속' };
 
 const els = {
+  head: document.getElementById('head'),
+  headBtns: document.getElementById('head-btns'),
   date: document.getElementById('date'),
   loading: document.getElementById('loading'),
   empty: document.getElementById('empty'),
   error: document.getElementById('error'),
   list: document.getElementById('list'),
   week: document.getElementById('week'),
+  weekHeadRow: document.getElementById('week-head-row'),
   weekLabel: document.getElementById('week-label'),
   weekHead: document.getElementById('week-head'),
   weekItems: document.getElementById('week-items'),
   month: document.getElementById('month'),
+  monthHead: document.getElementById('month-head'),
   monthLabel: document.getElementById('month-label'),
   monthDow: document.getElementById('month-dow'),
   monthCells: document.getElementById('month-cells'),
@@ -106,6 +110,15 @@ function applyViewModeUI(mode) {
   els.btnViewList.classList.toggle('active', mode === 'list');
   els.btnViewWeek.classList.toggle('active', mode === 'week');
   els.btnViewMonth.classList.toggle('active', mode === 'month');
+
+  // 주간/달력 보기에서는 상단 WorkFlow+날짜를 가운데로 키워서 보여주고, 아이콘
+  // 버튼 묶음은 해당 뷰의 이전/다음 이동줄로 옮겨서 오른쪽 정렬한다 — 같은
+  // DOM 노드를 옮기는 것이라 클릭 이벤트는 그대로 유지된다.
+  els.head.classList.toggle('centered', mode !== 'list');
+  if (mode === 'week') els.weekHeadRow.appendChild(els.headBtns);
+  else if (mode === 'month') els.monthHead.appendChild(els.headBtns);
+  else els.head.appendChild(els.headBtns);
+
   renderCurrent();
 }
 

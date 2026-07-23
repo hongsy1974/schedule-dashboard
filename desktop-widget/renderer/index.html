@@ -43,6 +43,12 @@
   .brand b { color: #F37321; }
   #date { font-size: 11px; color: #888; margin-top: 2px; }
   .head-left { display: flex; flex-direction: column; }
+  /* 주간/달력 보기에서는 WorkFlow+날짜를 가운데로, 가로로, 50% 큰 폰트로 —
+     리스트 보기는 원래 좌측 상단 레이아웃 그대로 유지. */
+  #head.centered { justify-content: center; }
+  #head.centered .head-left { flex-direction: row; align-items: baseline; gap: 8px; }
+  #head.centered .brand { font-size: 21px; }
+  #head.centered #date { font-size: 16.5px; margin-top: 0; }
 
   .head-btns { display: flex; gap: 6px; }
   .icon-btn {
@@ -101,10 +107,14 @@
     -webkit-app-region: no-drag;
   }
   #month-head {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center;
+    gap: 8px;
     padding: 2px 2px 8px;
     flex: none;
   }
+  /* head-btns가 여기로 옮겨오면(renderer.js) 맨 오른쪽으로 밀어낸다 — 이동 아이콘
+     (‹●›)과 라벨은 왼쪽에 붙어서 표시된다. */
+  #month-head #head-btns { margin-left: auto; }
   #month-label { font-size: 12.5px; font-weight: 700; }
   #month-nav { display: flex; gap: 4px; }
   .month-grid {
@@ -161,10 +171,13 @@
     overflow: hidden;
   }
   #week-head-row {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: center;
+    gap: 8px;
     padding: 2px 2px 8px;
     flex: none;
   }
+  /* head-btns가 여기로 옮겨오면(renderer.js) 맨 오른쪽으로 밀어낸다. */
+  #week-head-row #head-btns { margin-left: auto; }
   #week-label { font-size: 12.5px; font-weight: 700; }
   #week-nav { display: flex; gap: 4px; }
   .week-grid {
@@ -242,7 +255,7 @@
         <span class="brand">Work<b>Flow</b></span>
         <span id="date"></span>
       </div>
-      <div class="head-btns">
+      <div class="head-btns" id="head-btns">
         <button class="icon-btn no-drag" id="btn-view-list" title="리스트 보기">📋</button>
         <button class="icon-btn no-drag" id="btn-view-week" title="주간 보기">📆</button>
         <button class="icon-btn no-drag" id="btn-view-month" title="달력 보기">📅</button>
@@ -258,24 +271,24 @@
     <div id="list" style="display:none"></div>
     <div id="week" style="display:none">
       <div id="week-head-row">
-        <span id="week-label"></span>
         <div id="week-nav">
           <button class="icon-btn no-drag" id="btn-prev-week" title="지난 주">‹</button>
           <button class="icon-btn no-drag" id="btn-today-week" title="이번 주" style="font-size:10px">●</button>
           <button class="icon-btn no-drag" id="btn-next-week" title="다음 주">›</button>
         </div>
+        <span id="week-label"></span>
       </div>
       <div class="week-grid" id="week-head"></div>
       <div class="week-grid" id="week-items"></div>
     </div>
     <div id="month" style="display:none">
       <div id="month-head">
-        <span id="month-label"></span>
         <div id="month-nav">
           <button class="icon-btn no-drag" id="btn-prev-month" title="이전 달">‹</button>
           <button class="icon-btn no-drag" id="btn-today-month" title="이번 달" style="font-size:10px">●</button>
           <button class="icon-btn no-drag" id="btn-next-month" title="다음 달">›</button>
         </div>
+        <span id="month-label"></span>
       </div>
       <div class="month-grid" id="month-dow"></div>
       <div class="month-grid" id="month-cells"></div>
