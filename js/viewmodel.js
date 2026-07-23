@@ -61,59 +61,23 @@ App.computeViewModel = function (state) {
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
-  const durationDays = (t) => Math.round((parse(t.due) - parse(t.start)) / 86400000) + 1;
   // Legacy records may still carry the raw type:'recurring' (pre-checkbox
   // migration) on S.tasks — decorate() folds that into 지속 for display, but
   // this weekly section reads S.tasks directly, so it has to check both.
   const isOngoing = (t) => t.type === 'ongoing' || t.type === 'recurring';
 
-  // Only genuinely long-running tasks (10+ days) get a horizontal bar spanning
-  // their date range; anything shorter reads better as a normal chip under its
-  // due date (like a single-day item), so it only gets a lane below once it's
-  // actually long enough to benefit from being shown connected.
-  // 지속 업무 (ongoing) is always anchored to just its 종료일 in the weekly
-  // view instead of spanning/repeating across its full date range — it's a
-  // running task, not a scheduled block of days.
-  const LONG_DURATION_DAYS = 10;
-  const multiDayCandidates = S.tasks
-    .filter(t => statusOf(today, t) !== '완료' && !isOngoing(t) && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
-    .sort((a, b) => parse(a.start) - parse(b.start));
-  const laneEnds = [];
-  const weekBars = [];
-  multiDayCandidates.forEach(t => {
-    const clipStart = parse(t.start) < wkStart ? wkStart : parse(t.start);
-    const clipEnd = parse(t.due) > wkEnd ? wkEnd : parse(t.due);
-    let lane = laneEnds.findIndex(end => end < clipStart);
-    if (lane === -1) {
-      lane = laneEnds.length;
-      laneEnds.push(clipEnd);
-    } else {
-      laneEnds[lane] = clipEnd;
-    }
-    const colStart = Math.round((clipStart - wkStart) / 86400000);
-    const colEnd = Math.round((clipEnd - wkStart) / 86400000);
-    const c = statusOf(today, t) === '지연' ? RED : P;
-    weekBars.push({
-      id: t.id, label: `${t.name}(${dateRangeLabel(t)})`,
-      style: `grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};font-size:10px;font-weight:700;line-height:18px;padding:0 6px;margin:2px 3px;border-radius:4px;background:${c};color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;align-self:center`
-    });
-  });
-  const WEEK_LANE_COUNT = Math.max(1, laneEnds.length);
-
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const weekend = i === 0 || i === 6;
-    // Single-day tasks show on their one day; short multi-day tasks (under the
-    // bar threshold) repeat in every day cell they cover so the span still
-    // reads as connected without needing a dedicated lane. 지속 업무는 끝이
-    // 없는 진행형 업무라 주간 일정 자체에는 표시하지 않는다 (월간 일정·업무
-    // 목록에서는 계속 보임). Completed tasks are anchored to their 시작일
-    // (start), same as the monthly calendar below.
+    // Single-day tasks show on their one day; multi-day tasks repeat in every
+    // day cell they cover so the span still reads as connected. 지속 업무는
+    // 끝이 없는 진행형 업무라 주간 일정 자체에는 표시하지 않는다 (월간 일정·
+    // 업무 목록에서는 계속 보임). Completed tasks are anchored to their
+    // 시작일(start), same as the monthly calendar below.
     const dayTasks = S.tasks.filter(t => {
       if (isOngoing(t)) return false;
       if (statusOf(today, t) === '완료') return t.start === key;
-      return t.start === t.due ? t.due === key
-        : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
+      return t.start === t.due ? t.due === key : (t.start <= key && t.due >= key);
     });
     const items = dayTasks.slice(0, 4).map(t => {
       const st = statusOf(today, t);
@@ -144,13 +108,13 @@ App.computeViewModel = function (state) {
     const isToday = key === iso(today);
     const day = dt.getDate(), weekend = (i % 7) === 0 || (i % 7) === 6;
     const dayTasks = byAnchorDate[key] || [];
-    const items = dayTasks.slice(0, 2).map(t => {
+    const items = dayTasks.slice(0, 3).map(t => {
       const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
       return { id: t.id, name: t.name, style: `font-size:9.5px;line-height:1.2;padding:1px 4px;border-radius:3px;background:${c}18;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };
     });
     monthCells.push({
-      day, dateIso: key, items, more: dayTasks.length - 2, moreShow: dayTasks.length > 2,
-      cellStyle: `height:70px;overflow:hidden;cursor:pointer;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
+      day, dateIso: key, items, more: dayTasks.length - 3, moreShow: dayTasks.length > 3,
+      cellStyle: `height:88px;overflow:hidden;cursor:pointer;border-right:1px solid #EEF0F2;border-bottom:1px solid #EEF0F2;padding:4px 5px;background:${isToday ? '#FFFBF7' : (inMonth ? '#fff' : '#FAFBFC')};opacity:${inMonth ? 1 : .5}`,
       numStyle: `font-size:11.5px;font-weight:${isToday ? 900 : 600};color:${isToday ? '#fff' : (weekend ? '#bbb' : '#555')};${isToday ? `background:${P};border-radius:50%;width:19px;height:19px;display:inline-flex;align-items:center;justify-content:center` : ''}`
     });
   }
@@ -310,7 +274,7 @@ App.computeViewModel = function (state) {
     todayLabel: `${today.getFullYear()}. ${App.util.pad(today.getMonth() + 1)}. ${App.util.pad(today.getDate())} (${['일', '월', '화', '수', '목', '금', '토'][today.getDay()]})`,
     navItems, alerts: alertsCapped,
     view: S.view,
-    weekDays, weekRangeLabel, weekBars, weekLaneCount: WEEK_LANE_COUNT,
+    weekDays, weekRangeLabel,
     monthLabel, monthCells, dowHeaders,
     googleConnected: App.googleCalendar ? App.googleCalendar.isConnected() : false,
     googleSyncing: S.googleSyncing,

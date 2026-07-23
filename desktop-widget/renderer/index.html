@@ -124,7 +124,7 @@
     border-left: 1px solid #EEF0F2;
   }
   .day-cell {
-    height: 70px;
+    height: 88px;
     border-right: 1px solid #EEF0F2;
     border-bottom: 1px solid #EEF0F2;
     padding: 4px 5px;
@@ -179,20 +179,6 @@
   }
   .wd-name { font-size: 11px; font-weight: 700; }
   .wd-num { font-size: 14px; margin-top: 1px; }
-  /* 여러 날에 걸친 업무(10일 이상)는 사이트처럼 하나의 막대로 이어서 표시 —
-     겹치는 막대는 lane별로 쌓인다 (renderWeek의 그리디 lane 배치 참고). laneBg는
-     막대 아래 배경/구분선을 헤더·아이템 칸과 이어지게 채워주는 열(column)들. */
-  #week-bars {
-    position: relative;
-  }
-  .week-bar {
-    font-size: 9.6px; font-weight: 700; line-height: 18px; padding: 0 6px;
-    margin: 2px 3px;
-    border-radius: 4px; color: #fff;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    cursor: pointer;
-    align-self: center;
-  }
   /* 사이트의 주간 일정처럼 날짜 칸 영역을 고정 높이로 — flex:1로 남는 공간을
      채우게 두면 창 아래로 불필요하게 길게 늘어나 보인다. */
   #week-items {
@@ -274,7 +260,6 @@
         </div>
       </div>
       <div class="week-grid" id="week-head"></div>
-      <div class="week-grid" id="week-bars"></div>
       <div class="week-grid" id="week-items"></div>
     </div>
     <div id="month" style="display:none">

@@ -65,9 +65,6 @@
         <span style="${d.dowStyle}">${d.dow}</span>
         <span style="${d.dateStyle}">${d.date}</span>
       </div>`).join('');
-    const laneRowH = 22;
-    const laneBg = vm.weekDays.map((d, i) => `<div data-action="openNewOnDate" data-date="${d.dateIso}" style="grid-column:${i + 1};grid-row:1 / ${vm.weekLaneCount + 1};${d.colStyle};border-bottom:1px solid #EEF0F2"></div>`).join('');
-    const bars = vm.weekBars.map(b => `<div data-action="openEdit" data-id="${b.id}" title="${esc(b.label)}" style="${b.style}">${esc(b.label)}</div>`).join('');
     const items = vm.weekDays.map(d => `
       <div data-action="openNewOnDate" data-date="${d.dateIso}" style="${d.colStyle};border-bottom:1px solid #EEF0F2">
         <div style="padding:7px 6px;display:flex;flex-direction:column;gap:4px;height:96px;overflow:hidden">
@@ -90,7 +87,6 @@
       <div style="padding:0 8px 10px">
         <div style="display:grid;grid-template-columns:${cols}">${heads}</div>
         <div style="display:grid;grid-template-columns:${cols}">${items}</div>
-        <div style="display:grid;grid-template-columns:${cols};grid-auto-rows:${laneRowH}px;position:relative">${laneBg}${bars}</div>
       </div>
     </div>`;
   }

@@ -27,12 +27,10 @@ const today = (() => { const t = new Date(); t.setHours(0, 0, 0, 0); return t; }
 const dday = (due) => Math.round((parse(due) - today) / 86400000);
 const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
 const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
-const durationDays = (t) => Math.round((parse(t.due) - parse(t.start)) / 86400000) + 1;
 // Legacy records may still carry the raw type:'recurring' (pre-checkbox
 // migration on the website) — 지속 업무 is always anchored to its 종료일
 // instead of spanning/repeating, same as the website's weekly view.
 const isOngoing = (t) => t.type === 'ongoing' || t.type === 'recurring';
-const LONG_DURATION_DAYS = 10;
 
 // Mirrors App.logic.deadlineWeight/score from the website's js/logic.js, so
 // this widget ranks 해야할 일 exactly the same way the dashboard does.
@@ -68,7 +66,6 @@ const els = {
   weekLabel: document.getElementById('week-label'),
   weekHead: document.getElementById('week-head'),
   weekItems: document.getElementById('week-items'),
-  weekBars: document.getElementById('week-bars'),
   month: document.getElementById('month'),
   monthLabel: document.getElementById('month-label'),
   monthDow: document.getElementById('month-dow'),
@@ -179,39 +176,6 @@ function renderWeek(tasks) {
   const wkEnd = addDays(wkStart, 6);
   els.weekLabel.textContent = `${wkStart.getMonth() + 1}/${wkStart.getDate()} – ${wkEnd.getMonth() + 1}/${wkEnd.getDate()}`;
 
-  const multiDayCandidates = tasks
-    .filter((t) => !isComplete(t) && !isOngoing(t) && t.start !== t.due && durationDays(t) >= LONG_DURATION_DAYS
-      && !(parse(t.due) < wkStart || parse(t.start) > wkEnd))
-    .sort((a, b) => parse(a.start) - parse(b.start));
-  const laneEnds = [];
-  const bars = [];
-  multiDayCandidates.forEach((t) => {
-    const clipStart = parse(t.start) < wkStart ? wkStart : parse(t.start);
-    const clipEnd = parse(t.due) > wkEnd ? wkEnd : parse(t.due);
-    let lane = laneEnds.findIndex((end) => end < clipStart);
-    if (lane === -1) { lane = laneEnds.length; laneEnds.push(clipEnd); }
-    else laneEnds[lane] = clipEnd;
-    const colStart = Math.round((clipStart - wkStart) / 86400000);
-    const colEnd = Math.round((clipEnd - wkStart) / 86400000);
-    const c = statusColor(t);
-    bars.push(`
-      <div class="week-bar" data-id="${t.id}" title="${escapeHtml(t.name)}"
-        style="grid-column:${colStart + 1} / ${colEnd + 2};grid-row:${lane + 1};background:${c}">
-        ${escapeHtml(t.name)}(${dateRangeLabel(t)})
-      </div>`);
-  });
-  const laneCount = Math.max(1, laneEnds.length);
-
-  // Same lane-background columns as the website (laneBg in js/viewmodel.js):
-  // drawn under the bars so the day-column grid lines and 오늘 tint continue
-  // visually from the header/item rows above into the bar row below.
-  const laneBg = DOW.map((_, i) => {
-    const isToday = iso(addDays(wkStart, i)) === iso(today);
-    return `<div style="grid-column:${i + 1};grid-row:1 / ${laneCount + 1};border-right:${i < 6 ? GRID_LINE : 'none'};border-bottom:${GRID_LINE};background:${isToday ? '#FFFBF7' : '#fff'}"></div>`;
-  }).join('');
-  els.weekBars.style.gridTemplateRows = `repeat(${laneCount}, 22px)`;
-  els.weekBars.innerHTML = laneBg + bars.join('');
-
   els.weekHead.innerHTML = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today), weekend = i === 0 || i === 6;
     const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
@@ -231,8 +195,7 @@ function renderWeek(tasks) {
     const dayTasks = tasks.filter((t) => {
       if (isOngoing(t)) return false;
       if (isComplete(t)) return t.start === key;
-      return t.start === t.due ? t.due === key
-        : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
+      return t.start === t.due ? t.due === key : (t.start <= key && t.due >= key);
     });
     const shown = dayTasks.slice(0, 4);
     const more = dayTasks.length - shown.length;
@@ -275,9 +238,9 @@ function renderMonth(tasks) {
     const isToday = key === iso(today);
     const weekend = (i % 7) === 0 || (i % 7) === 6;
     const dayTasks = byAnchorDate[key] || [];
-    // Same layout as the website's month cells: a couple of truncated
-    // task-name chips, plus a "+n" indicator for anything that doesn't fit.
-    const shown = dayTasks.slice(0, 2);
+    // Same layout as the website's month cells: a few truncated task-name
+    // chips, plus a "+n" indicator for anything that doesn't fit.
+    const shown = dayTasks.slice(0, 3);
     const more = dayTasks.length - shown.length;
     const items = shown.map((t) => {
       const c = statusColor(t);
@@ -305,9 +268,6 @@ els.list.addEventListener('click', (e) => {
 });
 els.weekItems.addEventListener('click', (e) => {
   if (e.target.closest('.week-day-col')) window.widget.openSite();
-});
-els.weekBars.addEventListener('click', (e) => {
-  if (e.target.closest('.week-bar')) window.widget.openSite();
 });
 els.monthCells.addEventListener('click', (e) => {
   const cell = e.target.closest('.day-cell');
