@@ -49,8 +49,8 @@ App.computeViewModel = function (state) {
   if (alertsCapped.length === 0) alertsCapped.push('오늘 예정된 지연·임박 알림이 없습니다');
 
   // weekly
-  const DOW = ['월', '화', '수', '목', '금', '토', '일'];
-  const wkStart = addDays(today, -((today.getDay() + 6) % 7) + S.weekOffset * 7);
+  const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+  const wkStart = addDays(today, -today.getDay() + S.weekOffset * 7);
   const wkEnd = addDays(wkStart, 6);
   const byDue = {};
   S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
@@ -98,7 +98,7 @@ App.computeViewModel = function (state) {
 
   const weekDays = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
-    const weekend = i >= 5;
+    const weekend = i === 0 || i === 6;
     // Single-day tasks show on their one day; short multi-day tasks (under the
     // bar threshold) repeat in every day cell they cover so the span still
     // reads as connected without needing a dedicated lane. 지속 업무 is the
@@ -130,14 +130,14 @@ App.computeViewModel = function (state) {
   const base = new Date(today.getFullYear(), today.getMonth() + S.monthOffset, 1);
   const monthLabel = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
   const first = new Date(base.getFullYear(), base.getMonth(), 1);
-  const gridStart = addDays(first, -((first.getDay() + 6) % 7));
-  const dowHeaders = DOW.map((d, i) => ({ label: d, style: `text-align:center;font-size:11px;font-weight:700;padding:6px 0;color:${i >= 5 ? '#bbb' : '#999'}` }));
+  const gridStart = addDays(first, -first.getDay());
+  const dowHeaders = DOW.map((d, i) => ({ label: d, style: `text-align:center;font-size:11px;font-weight:700;padding:6px 0;color:${(i === 0 || i === 6) ? '#bbb' : '#999'}` }));
   const monthCells = [];
   for (let i = 0; i < 42; i++) {
     const dt = addDays(gridStart, i), key = iso(dt);
     const inMonth = dt.getMonth() === base.getMonth();
     const isToday = key === iso(today);
-    const day = dt.getDate(), weekend = (i % 7) >= 5;
+    const day = dt.getDate(), weekend = (i % 7) === 0 || (i % 7) === 6;
     const dayTasks = byDue[key] || [];
     const items = dayTasks.slice(0, 2).map(t => {
       const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);

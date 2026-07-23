@@ -91,14 +91,11 @@ const els = {
   openSite: document.getElementById('open-site'),
 };
 
-// Two different day-name orderings on purpose: the grid headers (weekly and
-// monthly calendars) match the website's 월요일-first layout, while looking
-// up "오늘이 무슨 요일" for the header date label needs Date#getDay()'s own
-// 일요일=0 ordering.
-const DOW_GRID = ['월', '화', '수', '목', '금', '토', '일'];
-const DOW_BY_GETDAY = ['일', '월', '화', '수', '목', '금', '토'];
-els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW_BY_GETDAY[today.getDay()]})`;
-els.monthDow.innerHTML = DOW_GRID.map((d, i) => `<div class="dow-cell" style="color:${i >= 5 ? '#bbb' : '#999'}">${d}</div>`).join('');
+// 일요일-first ordering, matching the website's weekly/monthly grids and
+// lining up directly with Date#getDay()'s own 일요일=0 indexing.
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW[today.getDay()]})`;
+els.monthDow.innerHTML = DOW.map((d, i) => `<div class="dow-cell" style="color:${(i === 0 || i === 6) ? '#bbb' : '#999'}">${d}</div>`).join('');
 
 let latestTasks = [];
 let viewMode = 'list';
@@ -180,7 +177,7 @@ function statusColor(t) {
 const GRID_LINE = '1px solid #EEF0F2';
 
 function renderWeek(tasks) {
-  const wkStart = addDays(today, -((today.getDay() + 6) % 7) + weekOffset * 7);
+  const wkStart = addDays(today, -today.getDay() + weekOffset * 7);
   const wkEnd = addDays(wkStart, 6);
   els.weekLabel.textContent = `${wkStart.getMonth() + 1}/${wkStart.getDate()} – ${wkEnd.getMonth() + 1}/${wkEnd.getDate()}`;
 
@@ -210,15 +207,15 @@ function renderWeek(tasks) {
   // Same lane-background columns as the website (laneBg in js/viewmodel.js):
   // drawn under the bars so the day-column grid lines and 오늘 tint continue
   // visually from the header/item rows above into the bar row below.
-  const laneBg = DOW_GRID.map((_, i) => {
+  const laneBg = DOW.map((_, i) => {
     const isToday = iso(addDays(wkStart, i)) === iso(today);
     return `<div style="grid-column:${i + 1};grid-row:1 / ${laneCount + 1};border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFFBF7' : '#fff'}"></div>`;
   }).join('');
   els.weekBars.style.gridTemplateRows = `repeat(${laneCount}, 22px)`;
   els.weekBars.innerHTML = laneBg + bars.join('');
 
-  els.weekHead.innerHTML = DOW_GRID.map((dw, i) => {
-    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today), weekend = i >= 5;
+  els.weekHead.innerHTML = DOW.map((dw, i) => {
+    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today), weekend = i === 0 || i === 6;
     const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
     const dateColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#444');
     return `<div class="week-day-head" data-date="${key}"
@@ -228,7 +225,7 @@ function renderWeek(tasks) {
       </div>`;
   }).join('');
 
-  els.weekItems.innerHTML = DOW_GRID.map((dw, i) => {
+  els.weekItems.innerHTML = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     const dayTasks = tasks.filter((t) => {
       if (isComplete(t)) return (t.completedDate || t.updated) === key;
@@ -257,11 +254,11 @@ function renderMonth(tasks) {
   const byDue = {};
   tasks.forEach((t) => { if (t.due) (byDue[t.due] = byDue[t.due] || []).push(t); });
 
-  // 42-cell grid (6 weeks) starting from the Monday on/before the 1st,
-  // matching the 월~일 header order used across the whole app.
+  // 42-cell grid (6 weeks) starting from the Sunday on/before the 1st,
+  // matching the 일~토 header order used across the whole app.
   const first = new Date(base.getFullYear(), base.getMonth(), 1);
   const gridStart = new Date(first);
-  gridStart.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+  gridStart.setDate(first.getDate() - first.getDay());
 
   const cells = [];
   for (let i = 0; i < 42; i++) {
@@ -270,7 +267,7 @@ function renderMonth(tasks) {
     const key = iso(dt);
     const inMonth = dt.getMonth() === base.getMonth();
     const isToday = key === iso(today);
-    const weekend = (i % 7) >= 5;
+    const weekend = (i % 7) === 0 || (i % 7) === 6;
     const dayTasks = byDue[key] || [];
     // Same layout as the website's month cells: a couple of truncated
     // task-name chips, plus a "+n" indicator for anything that doesn't fit.
