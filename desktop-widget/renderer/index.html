@@ -43,17 +43,19 @@
   .brand b { color: #F37321; }
   #date { font-size: 11px; color: #888; margin-top: 2px; }
   .head-left { display: flex; flex-direction: column; }
-  /* 주간/달력 보기에서는 WorkFlow+날짜를 가운데로, 가로로 표시 — 리스트 보기는
-     원래 좌측 상단 레이아웃 그대로 유지. 위아래 폭을 줄이고 아래쪽(이동줄 방향)에
-     붙도록 padding을 줄이고 align-items를 flex-end로 바꾼다. */
-  #head.centered {
-    justify-content: center;
-    align-items: flex-end;
-    padding: 4px 14px 6px;
+  /* 주간/달력 보기에서는 WorkFlow+날짜, 이동 아이콘, 라벨, 메뉴 버튼을 모두 한
+     줄(week-head-row/month-head)에 놓는다 — #head 자체는 비워지므로 숨긴다.
+     리스트 보기는 원래 좌측 상단 레이아웃 그대로 유지. */
+  #head.hidden-for-view { display: none; }
+  #week-head-row .head-left, #month-head .head-left {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    transform: translateX(-50%);
+    flex-direction: row; align-items: baseline; gap: 8px;
   }
-  #head.centered .head-left { flex-direction: row; align-items: baseline; gap: 8px; }
-  #head.centered .brand { font-size: 25.2px; }
-  #head.centered #date { font-size: 14.85px; margin-top: 0; }
+  #week-head-row .head-left .brand, #month-head .head-left .brand { font-size: 25.2px; }
+  #week-head-row .head-left #date, #month-head .head-left #date { font-size: 14.85px; margin-top: 0; }
 
   .head-btns { display: flex; gap: 6px; }
   .icon-btn {
@@ -112,7 +114,8 @@
     -webkit-app-region: no-drag;
   }
   #month-head {
-    display: flex; align-items: center;
+    display: flex; align-items: flex-end;
+    position: relative;
     gap: 8px;
     padding: 2px 2px 8px;
     flex: none;
@@ -176,7 +179,8 @@
     overflow: hidden;
   }
   #week-head-row {
-    display: flex; align-items: center;
+    display: flex; align-items: flex-end;
+    position: relative;
     gap: 8px;
     padding: 2px 2px 8px;
     flex: none;
@@ -206,7 +210,7 @@
      채우게 두면 창 아래로 불필요하게 길게 늘어나 보인다. */
   #week-items {
     flex: none;
-    height: 132px;
+    height: 158px;
     align-content: start;
     overflow: hidden;
     border-left: 1px solid #E3E5E8;
@@ -256,7 +260,7 @@
 <body>
   <div id="card">
     <div id="head">
-      <div class="head-left">
+      <div class="head-left" id="head-left">
         <span class="brand">Work<b>Flow</b></span>
         <span id="date"></span>
       </div>

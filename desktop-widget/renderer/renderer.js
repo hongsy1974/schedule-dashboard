@@ -58,6 +58,7 @@ const TYPE_LABEL = { ongoing: '지속', goal: '목표', simple: '단순', person
 
 const els = {
   head: document.getElementById('head'),
+  headLeft: document.getElementById('head-left'),
   headBtns: document.getElementById('head-btns'),
   date: document.getElementById('date'),
   loading: document.getElementById('loading'),
@@ -111,13 +112,14 @@ function applyViewModeUI(mode) {
   els.btnViewWeek.classList.toggle('active', mode === 'week');
   els.btnViewMonth.classList.toggle('active', mode === 'month');
 
-  // 주간/달력 보기에서는 상단 WorkFlow+날짜를 가운데로 키워서 보여주고, 아이콘
-  // 버튼 묶음은 해당 뷰의 이전/다음 이동줄로 옮겨서 오른쪽 정렬한다 — 같은
-  // DOM 노드를 옮기는 것이라 클릭 이벤트는 그대로 유지된다.
-  els.head.classList.toggle('centered', mode !== 'list');
-  if (mode === 'week') els.weekHeadRow.appendChild(els.headBtns);
-  else if (mode === 'month') els.monthHead.appendChild(els.headBtns);
-  else els.head.appendChild(els.headBtns);
+  // 주간/달력 보기에서는 WorkFlow+날짜, 이동 아이콘, 라벨, 메뉴 버튼을 모두
+  // 이전/다음 이동줄 한 줄에 놓는다 (WorkFlow+날짜는 가운데, 하단 정렬) — 원래
+  // #head는 비워지므로 숨긴다. 같은 DOM 노드를 옮기는 것이라 클릭 이벤트는
+  // 그대로 유지된다.
+  els.head.classList.toggle('hidden-for-view', mode !== 'list');
+  if (mode === 'week') { els.weekHeadRow.appendChild(els.headLeft); els.weekHeadRow.appendChild(els.headBtns); }
+  else if (mode === 'month') { els.monthHead.appendChild(els.headLeft); els.monthHead.appendChild(els.headBtns); }
+  else { els.head.appendChild(els.headLeft); els.head.appendChild(els.headBtns); }
 
   renderCurrent();
 }
