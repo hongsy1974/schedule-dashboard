@@ -192,7 +192,7 @@ function renderWeek(tasks) {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today), weekend = i === 0 || i === 6;
     const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
     return `<div class="week-day-head" data-date="${key}"
-        style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#FAFBFC'}">
+        style="border-right:${GRID_LINE};${i === 0 ? `border-left:${GRID_LINE};` : ''}background:${isToday ? '#FFF4EC' : '#FAFBFC'}">
         <span class="wd-name" style="color:${dowColor};font-weight:${isToday ? 900 : 700}">${dw}</span>
       </div>`;
   }).join('');
@@ -214,7 +214,7 @@ function renderWeek(tasks) {
       return `<div class="week-item" data-id="${t.id}" title="${escapeHtml(t.name)}" style="background:${c}18;color:${c};border-left-color:${c}">${escapeHtml(t.name)}(${dateRangeLabel(t)})</div>`;
     }).join('');
     return `<div class="week-day-col" data-date="${key}"
-        style="border-right:${i < 6 ? GRID_LINE : 'none'};border-bottom:${GRID_LINE};background:${isToday ? '#FFFBF7' : '#fff'}">
+        style="border-right:${GRID_LINE};border-bottom:${GRID_LINE};${i === 0 ? `border-left:${GRID_LINE};` : ''}background:${isToday ? '#FFFBF7' : '#fff'}">
         ${chips}${more > 0 ? `<div class="day-more">+${more}</div>` : ''}
       </div>`;
   }).join('');
