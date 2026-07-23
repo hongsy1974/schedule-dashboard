@@ -98,7 +98,7 @@ const els = {
 const DOW_GRID = ['월', '화', '수', '목', '금', '토', '일'];
 const DOW_BY_GETDAY = ['일', '월', '화', '수', '목', '금', '토'];
 els.date.textContent = `${today.getMonth() + 1}월 ${today.getDate()}일 (${DOW_BY_GETDAY[today.getDay()]})`;
-els.monthDow.innerHTML = DOW_GRID.map((d) => `<div class="dow-cell">${d}</div>`).join('');
+els.monthDow.innerHTML = DOW_GRID.map((d, i) => `<div class="dow-cell" style="color:${i >= 5 ? '#bbb' : '#999'}">${d}</div>`).join('');
 
 let latestTasks = [];
 let viewMode = 'list';
@@ -177,6 +177,8 @@ function statusColor(t) {
 // Same lane-stacking approach as the website's weekly view: multi-day tasks
 // long enough to earn a spanning bar (10+ days) are greedily packed into as
 // few horizontal lanes as possible so overlapping ones don't collide.
+const GRID_LINE = '1px solid #EEF0F2';
+
 function renderWeek(tasks) {
   const wkStart = addDays(today, -((today.getDay() + 6) % 7) + weekOffset * 7);
   const wkEnd = addDays(wkStart, 6);
@@ -204,12 +206,26 @@ function renderWeek(tasks) {
       </div>`);
   });
   const laneCount = Math.max(1, laneEnds.length);
-  els.weekBars.style.gridTemplateRows = `repeat(${laneCount}, 20px)`;
-  els.weekBars.innerHTML = bars.join('');
+
+  // Same lane-background columns as the website (laneBg in js/viewmodel.js):
+  // drawn under the bars so the day-column grid lines and 오늘 tint continue
+  // visually from the header/item rows above into the bar row below.
+  const laneBg = DOW_GRID.map((_, i) => {
+    const isToday = iso(addDays(wkStart, i)) === iso(today);
+    return `<div style="grid-column:${i + 1};grid-row:1 / ${laneCount + 1};border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFFBF7' : '#fff'}"></div>`;
+  }).join('');
+  els.weekBars.style.gridTemplateRows = `repeat(${laneCount}, 22px)`;
+  els.weekBars.innerHTML = laneBg + bars.join('');
 
   els.weekHead.innerHTML = DOW_GRID.map((dw, i) => {
-    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
-    return `<div class="week-day-head${isToday ? ' today' : ''}" data-date="${key}"><span class="wd-name">${dw}</span><span class="wd-num">${dt.getDate()}</span></div>`;
+    const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today), weekend = i >= 5;
+    const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
+    const dateColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#444');
+    return `<div class="week-day-head" data-date="${key}"
+        style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#FAFBFC'}">
+        <span class="wd-name" style="color:${dowColor}">${dw}</span>
+        <span class="wd-num" style="color:${dateColor};font-weight:${isToday ? 900 : 700}">${dt.getDate()}</span>
+      </div>`;
   }).join('');
 
   els.weekItems.innerHTML = DOW_GRID.map((dw, i) => {
@@ -225,7 +241,10 @@ function renderWeek(tasks) {
       const c = statusColor(t);
       return `<div class="week-item" data-id="${t.id}" title="${escapeHtml(t.name)}" style="background:${c}18;color:${c};border-left-color:${c}">${escapeHtml(t.name)}(${dateRangeLabel(t)})</div>`;
     }).join('');
-    return `<div class="week-day-col${isToday ? ' today' : ''}" data-date="${key}">${chips}${more > 0 ? `<div class="day-more">+${more}</div>` : ''}</div>`;
+    return `<div class="week-day-col" data-date="${key}"
+        style="border-right:${i < 6 ? GRID_LINE : 'none'};border-bottom:${GRID_LINE};background:${isToday ? '#FFFBF7' : '#fff'}">
+        ${chips}${more > 0 ? `<div class="day-more">+${more}</div>` : ''}
+      </div>`;
   }).join('');
 
   show('week');
@@ -251,6 +270,7 @@ function renderMonth(tasks) {
     const key = iso(dt);
     const inMonth = dt.getMonth() === base.getMonth();
     const isToday = key === iso(today);
+    const weekend = (i % 7) >= 5;
     const dayTasks = byDue[key] || [];
     // Same layout as the website's month cells: a couple of truncated
     // task-name chips, plus a "+n" indicator for anything that doesn't fit.
@@ -258,10 +278,10 @@ function renderMonth(tasks) {
     const more = dayTasks.length - shown.length;
     const items = shown.map((t) => {
       const c = statusColor(t);
-      return `<div class="day-item" data-id="${t.id}" title="${escapeHtml(t.name)}" style="background:${c}22;color:${c};border-left-color:${c}">${escapeHtml(t.name)}</div>`;
+      return `<div class="day-item" data-id="${t.id}" title="${escapeHtml(t.name)}" style="background:${c}18;color:${c}">${escapeHtml(t.name)}</div>`;
     }).join('');
     cells.push(`
-      <div class="day-cell${inMonth ? '' : ' outside'}${isToday ? ' today' : ''}" data-date="${key}">
+      <div class="day-cell${inMonth ? '' : ' outside'}${isToday ? ' today' : ''}${weekend ? ' weekend' : ''}" data-date="${key}">
         <span class="day-num">${dt.getDate()}</span>
         <div class="day-items">${items}${more > 0 ? `<div class="day-more">+${more}</div>` : ''}</div>
       </div>`);
