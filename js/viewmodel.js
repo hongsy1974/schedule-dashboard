@@ -159,8 +159,8 @@ App.computeViewModel = function (state) {
     rankStyle: `width:24px;height:24px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;background:${i === 0 ? P : (i < 3 ? '#F9A46A' : '#cfd2d6')}`
   }));
 
-  // ongoing cards
-  const ongoing = active.filter(t => t.type === 'ongoing' || t.type === 'goal' || t.type === 'simple');
+  // ongoing cards — 유형이 "지속"(ongoing)인 업무만, 목표/단순 업무는 제외
+  const ongoing = active.filter(t => t.type === 'ongoing');
   const ongoingCards = [...ongoing].sort((a, b) => dday(today, a.due) - dday(today, b.due)).map(t => ({
     ...t, prioLabel: t.score + '점',
     prioBadge: `background:${P};color:#fff;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;flex:none`
