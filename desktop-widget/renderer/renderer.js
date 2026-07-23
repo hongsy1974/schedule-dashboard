@@ -227,9 +227,12 @@ function renderWeek(tasks) {
 
   els.weekItems.innerHTML = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
+    // 지속 업무는 끝이 없는 진행형 업무라 주간 일정에는 표시하지 않는다
+    // (월간 일정에서는 계속 보임) — js/viewmodel.js의 weekDays와 동일.
     const dayTasks = tasks.filter((t) => {
+      if (isOngoing(t)) return false;
       if (isComplete(t)) return (t.completedDate || t.updated) === key;
-      return (isOngoing(t) || t.start === t.due) ? t.due === key
+      return t.start === t.due ? t.due === key
         : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
     });
     const shown = dayTasks.slice(0, 4);

@@ -101,13 +101,15 @@ App.computeViewModel = function (state) {
     const weekend = i === 0 || i === 6;
     // Single-day tasks show on their one day; short multi-day tasks (under the
     // bar threshold) repeat in every day cell they cover so the span still
-    // reads as connected without needing a dedicated lane. 지속 업무 is the
-    // exception — always shown once, on its 종료일 only. Completed tasks are
-    // anchored to the day they were marked 완료 (completedDate, falling back
-    // to 업데이트 date for older records saved before this field existed).
+    // reads as connected without needing a dedicated lane. 지속 업무는 끝이
+    // 없는 진행형 업무라 주간 일정 자체에는 표시하지 않는다 (월간 일정·업무
+    // 목록에서는 계속 보임). Completed tasks are anchored to the day they were
+    // marked 완료 (completedDate, falling back to 업데이트 date for older
+    // records saved before this field existed).
     const dayTasks = S.tasks.filter(t => {
+      if (isOngoing(t)) return false;
       if (statusOf(today, t) === '완료') return (t.completedDate || t.updated) === key;
-      return (isOngoing(t) || t.start === t.due) ? t.due === key
+      return t.start === t.due ? t.due === key
         : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
     });
     const items = dayTasks.slice(0, 4).map(t => {
