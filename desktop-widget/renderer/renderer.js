@@ -217,7 +217,7 @@ function renderWeek(tasks) {
     const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
     const dateColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#444');
     return `<div class="week-day-head" data-date="${key}"
-        style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#E3E5E8'}">
+        style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#FAFBFC'}">
         <span class="wd-name" style="color:${dowColor}">${dw}</span>
         <span class="wd-num" style="color:${dateColor};font-weight:${isToday ? 900 : 700}">${dt.getDate()}</span>
       </div>`;
