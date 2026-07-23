@@ -205,17 +205,19 @@
     padding: 6px 0;
   }
   .wd-name { font-size: 11px; font-weight: 700; }
-  /* 사이트의 주간 일정처럼 날짜 칸 영역을 고정 높이로 — flex:1로 남는 공간을
-     채우게 두면 창 아래로 불필요하게 길게 늘어나 보인다. */
+  /* 사이트의 주간 일정처럼 날짜 칸 영역을 고정 높이로 — 컨테이너 자체에 고정
+     height를 주면 내용이 적을 때 실제 줄(grid row)은 짧아지고 컨테이너만 남는
+     공간이 생겨 테두리가 내용보다 길게 삐져나와 보인다(선 밖으로 튀어나오는
+     버그). 대신 각 날짜 칸(.week-day-col)에 min-height를 줘서 — 업무가 하나도
+     없는 주라도 5줄 높이만큼은 항상 확보되면서, 그 높이가 곧 실제 grid row의
+     높이가 되어 테두리도 항상 그 안에서 끝난다. */
   #week-items {
     flex: none;
-    height: 158px;
-    align-content: start;
     overflow: hidden;
   }
   .week-day-col {
     display: flex; flex-direction: column; gap: 4px; min-width: 0;
-    height: 100%;
+    min-height: 120px;
     padding: 2px 6px 4px;
     overflow: hidden;
   }
