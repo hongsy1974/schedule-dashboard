@@ -125,7 +125,7 @@ App.logic = {
 
   navStyle(active) {
     const P = App.const.P;
-    return `height:56px;padding:0 16px;border:none;background:none;cursor:pointer;font-size:13.5px;font-weight:${active ? 700 : 500};color:${active ? P : '#555'};border-bottom:3px solid ${active ? P : 'transparent'};margin-bottom:-1px`;
+    return `height:56px;padding:0 16px;border:none;background:none;cursor:pointer;font-size:20.25px;font-weight:${active ? 700 : 500};color:${active ? P : '#555'};border-bottom:3px solid ${active ? P : 'transparent'};margin-bottom:-1px`;
   },
 
   chip(active) {

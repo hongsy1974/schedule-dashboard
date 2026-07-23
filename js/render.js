@@ -5,7 +5,7 @@
   // Shared frame height for every non-home page's main content area, matching how
   // tall the home dashboard's grid (목표 달성 현황 + 주간 일정 + 월간 일정 stacked)
   // typically renders, so switching between menu tabs doesn't jump around in size.
-  const MAIN_HEIGHT = 1096;
+  const MAIN_HEIGHT = 1425;
 
   function renderHeader(vm) {
     const nav = vm.navItems.map(n =>
@@ -16,7 +16,7 @@
       <div style="height:56px;display:flex;align-items:center;padding:0 28px;gap:34px">
         <div style="display:flex;align-items:center;gap:11px">
           <div style="width:30px;height:30px;background:#F37321;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:17px">W</div>
-          <span style="font-weight:900;font-size:17px;letter-spacing:-.3px">WorkFlow<span style="color:#F37321"> Portal</span></span>
+          <span style="font-weight:900;font-size:25.5px;letter-spacing:-.3px">WorkFlow<span style="color:#F37321"> Portal</span></span>
         </div>
         <nav style="display:flex;align-items:center;gap:2px;height:100%">${nav}</nav>
         <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
@@ -132,7 +132,7 @@
   // items there are — the list scrolls inside it instead of growing the card.
   // Sized so the card's bottom edge lines up with 주간 일정's bottom edge
   // (목표 달성 현황 + 주간 일정's combined height, minus this card's own header).
-  const TODO_LIST_HEIGHT = 432;
+  const TODO_LIST_HEIGHT = 594;
   // "개인 일정" gets a fixed 3-row frame (same idea as TODO_LIST_HEIGHT) so its
   // top edge lines up with 월간 일정's top edge regardless of how many personal
   // items exist; 지속 업무 진행률 below it absorbs whatever space is left.
@@ -262,13 +262,17 @@
       </div>
       <button data-action="openNew" style="background:#F37321;color:#fff;border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;box-shadow:0 1px 3px rgba(243,115,33,.35)">+ 새 업무 등록</button>
     </div>
-    <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px">
-      <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:grid;grid-template-columns:1.755fr 0.7fr;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:16px;zoom:1.3">
         ${renderGoalGauges(vm)}
         ${renderWeekly(vm)}
         ${renderMonthly(vm)}
       </div>
-      <div style="display:flex;flex-direction:column;gap:16px">
+      <!-- gap is 16px * 1.3 (matching the left column's zoomed gap) so the
+           해야할 일/개인 일정/지속 업무 진행률 boundaries below still line up
+           with 주간 일정/월간 일정's edges — see TODO_LIST_HEIGHT/
+           PERSONAL_LIST_HEIGHT above. -->
+      <div style="display:flex;flex-direction:column;gap:20.8px">
         ${renderTodo(vm)}
         ${renderPersonal(vm)}
         ${renderOngoing(vm, true)}
