@@ -166,10 +166,7 @@ function statusColor(t) {
   return '#F37321';
 }
 
-// Same lane-stacking approach as the website's weekly view: multi-day tasks
-// long enough to earn a spanning bar (10+ days) are greedily packed into as
-// few horizontal lanes as possible so overlapping ones don't collide.
-const GRID_LINE = '1px solid #EEF0F2';
+const GRID_LINE = '1px solid #E3E5E8';
 
 function renderWeek(tasks) {
   const wkStart = addDays(today, -today.getDay() + weekOffset * 7);
@@ -179,11 +176,9 @@ function renderWeek(tasks) {
   els.weekHead.innerHTML = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today), weekend = i === 0 || i === 6;
     const dowColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#888');
-    const dateColor = isToday ? '#F37321' : (weekend ? '#bbb' : '#444');
     return `<div class="week-day-head" data-date="${key}"
         style="border-right:${i < 6 ? GRID_LINE : 'none'};background:${isToday ? '#FFF4EC' : '#FAFBFC'}">
-        <span class="wd-name" style="color:${dowColor}">${dw}</span>
-        <span class="wd-num" style="color:${dateColor};font-weight:${isToday ? 900 : 700}">${dt.getDate()}</span>
+        <span class="wd-name" style="color:${dowColor};font-weight:${isToday ? 900 : 700}">${dw}</span>
       </div>`;
   }).join('');
 
@@ -197,7 +192,7 @@ function renderWeek(tasks) {
       if (isComplete(t)) return t.start === key;
       return t.start === t.due ? t.due === key : (t.start <= key && t.due >= key);
     });
-    const shown = dayTasks.slice(0, 4);
+    const shown = dayTasks.slice(0, 5);
     const more = dayTasks.length - shown.length;
     const chips = shown.map((t) => {
       const c = statusColor(t);

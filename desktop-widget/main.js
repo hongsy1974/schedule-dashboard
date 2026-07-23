@@ -8,7 +8,7 @@ const SITE_URL = 'https://hongsy1974.github.io/schedule-dashboard/';
 const SIZES = {
   list: { width: 340, height: 480 },
   week: { width: 1049, height: 312 },
-  month: { width: 1049, height: 712 },
+  month: { width: 1049, height: 699 },
 };
 const COLLAPSED_HEIGHT = 50;
 const settingsFile = path.join(app.getPath('userData'), 'window-position.json');
