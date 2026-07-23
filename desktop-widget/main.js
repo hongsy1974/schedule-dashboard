@@ -7,8 +7,8 @@ const SITE_URL = 'https://hongsy1974.github.io/schedule-dashboard/';
 // 보이도록 훨씬 넓게 — 두 모드는 폭이 크게 다르므로 뷰 전환 시 창 자체를 다시 그림.
 const SIZES = {
   list: { width: 340, height: 480 },
-  week: { width: 760, height: 360 },
-  month: { width: 760, height: 632 },
+  week: { width: 912, height: 360 },
+  month: { width: 912, height: 632 },
 };
 const COLLAPSED_HEIGHT = 50;
 const settingsFile = path.join(app.getPath('userData'), 'window-position.json');
@@ -55,11 +55,18 @@ function defaultPosition(width) {
 // window stays technically resizable but pinned so tightly the user can't
 // actually drag it to a different size — while our own setSize() calls
 // (used for view-switching and collapse/expand) keep working reliably.
+//
+// 뷰 전환 시 기준점은 오른쪽 위 — setSize() 자체는 왼쪽 위를 고정한 채 오른쪽/
+// 아래로만 커지므로, 폭이 바뀐 만큼 x를 보정해서 오른쪽 가장자리(및 위쪽 y)는
+// 그대로 두고 왼쪽으로만 넓어지거나 좁아지게 만든다.
 function applySize(width, height) {
   if (!win) return;
+  const [oldX, oldY] = win.getPosition();
+  const [oldWidth] = win.getSize();
   win.setMinimumSize(width, height);
   win.setMaximumSize(width, height);
   win.setSize(width, height);
+  win.setPosition(oldX + (oldWidth - width), oldY);
   keepOnScreen(width, height);
 }
 
