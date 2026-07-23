@@ -130,7 +130,13 @@
 
   // "해야할 일" keeps a fixed frame height regardless of how many outstanding
   // items there are — the list scrolls inside it instead of growing the card.
-  const TODO_LIST_HEIGHT = 300;
+  // Sized so the card's bottom edge lines up with 주간 일정's bottom edge
+  // (목표 달성 현황 + 주간 일정's combined height, minus this card's own header).
+  const TODO_LIST_HEIGHT = 432;
+  // "개인 일정" gets a fixed 3-row frame (same idea as TODO_LIST_HEIGHT) so its
+  // top edge lines up with 월간 일정's top edge regardless of how many personal
+  // items exist; 지속 업무 진행률 below it absorbs whatever space is left.
+  const PERSONAL_LIST_HEIGHT = 203;
 
   function renderTodo(vm) {
     const rows = vm.todoList.map(t => `
@@ -159,9 +165,7 @@
     </div>`;
   }
 
-  function renderPersonal(vm, stretch) {
-    const cardExtra = stretch ? ';flex:1;display:flex;flex-direction:column;min-height:0' : '';
-    const listExtra = stretch ? 'flex:1;overflow:auto' : '';
+  function renderPersonal(vm) {
     const cards = vm.personalCards.map(t => `
       <div data-action="openEdit" data-id="${t.id}" style="border:1px solid #EEF0F2;border-radius:7px;padding:8px 13px;cursor:pointer">
         <div style="display:flex;align-items:center;gap:8px">
@@ -178,7 +182,7 @@
         </div>
       </div>`).join('');
     return `
-    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px${cardExtra}">
+    <div style="background:#fff;border:1px solid #E3E5E8;border-radius:8px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #EEF0F2">
         <div style="display:flex;align-items:baseline;gap:9px">
           <span style="font-size:15.5px;font-weight:700">개인 일정</span>
@@ -186,7 +190,7 @@
         </div>
         <button data-action="goToTasksFiltered" data-value="personal" style="border:none;background:none;color:#888;font-size:12px;cursor:pointer">더보기 ›</button>
       </div>
-      <div style="padding:10px 16px;display:flex;flex-direction:column;gap:6px;${listExtra}">
+      <div style="height:${PERSONAL_LIST_HEIGHT}px;overflow:auto;padding:10px 16px;display:flex;flex-direction:column;gap:6px">
         ${cards || `<div style="font-size:12px;color:#bbb;padding:16px 4px;text-align:center">등록된 개인 일정이 없습니다</div>`}
       </div>
     </div>`;
