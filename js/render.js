@@ -123,7 +123,7 @@
       </div>
       <div style="padding:12px 14px 16px">
         <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-bottom:4px">${heads}</div>
-        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:70px;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">${cells}</div>
+        <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:88px;border-top:1px solid #EEF0F2;border-left:1px solid #EEF0F2">${cells}</div>
       </div>
     </div>`;
   }
