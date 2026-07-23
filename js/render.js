@@ -20,11 +20,7 @@
         </div>
         <nav style="display:flex;align-items:center;gap:2px;height:100%">${nav}</nav>
         <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-          <div style="text-align:right;line-height:1.25">
-            <div style="font-size:12px;color:#888">${esc(vm.todayLabel)}</div>
-            <div style="font-size:12px;font-weight:700">담당자 · 김실무</div>
-          </div>
-          <div style="width:34px;height:34px;border-radius:50%;background:#F5F6F7;border:1px solid #E3E5E8;display:flex;align-items:center;justify-content:center;font-weight:700;color:#888;font-size:13px">김</div>
+          <div style="font-size:24px;color:#888">${esc(vm.todayLabel)}</div>
         </div>
       </div>
     </div>`;
