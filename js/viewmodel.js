@@ -52,8 +52,12 @@ App.computeViewModel = function (state) {
   const DOW = ['일', '월', '화', '수', '목', '금', '토'];
   const wkStart = addDays(today, -today.getDay() + S.weekOffset * 7);
   const wkEnd = addDays(wkStart, 6);
-  const byDue = {};
-  S.tasks.forEach(t => { (byDue[t.due] = byDue[t.due] || []).push(t); });
+  // 완료된(체크된) 업무는 시작일에, 나머지는 마감일에 걸어서 월간 달력에 표시한다.
+  const byAnchorDate = {};
+  S.tasks.forEach(t => {
+    const key = statusOf(today, t) === '완료' ? t.start : t.due;
+    (byAnchorDate[key] = byAnchorDate[key] || []).push(t);
+  });
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;
   const dateRangeLabel = (t) => t.start === t.due ? mdLabel(parse(t.due)) : `${mdLabel(parse(t.start))}~${mdLabel(parse(t.due))}`;
@@ -103,12 +107,11 @@ App.computeViewModel = function (state) {
     // bar threshold) repeat in every day cell they cover so the span still
     // reads as connected without needing a dedicated lane. 지속 업무는 끝이
     // 없는 진행형 업무라 주간 일정 자체에는 표시하지 않는다 (월간 일정·업무
-    // 목록에서는 계속 보임). Completed tasks are anchored to the day they were
-    // marked 완료 (completedDate, falling back to 업데이트 date for older
-    // records saved before this field existed).
+    // 목록에서는 계속 보임). Completed tasks are anchored to their 시작일
+    // (start), same as the monthly calendar below.
     const dayTasks = S.tasks.filter(t => {
       if (isOngoing(t)) return false;
-      if (statusOf(today, t) === '완료') return (t.completedDate || t.updated) === key;
+      if (statusOf(today, t) === '완료') return t.start === key;
       return t.start === t.due ? t.due === key
         : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
     });
@@ -140,7 +143,7 @@ App.computeViewModel = function (state) {
     const inMonth = dt.getMonth() === base.getMonth();
     const isToday = key === iso(today);
     const day = dt.getDate(), weekend = (i % 7) === 0 || (i % 7) === 6;
-    const dayTasks = byDue[key] || [];
+    const dayTasks = byAnchorDate[key] || [];
     const items = dayTasks.slice(0, 2).map(t => {
       const st = statusOf(today, t), c = st === '지연' ? RED : (st === '완료' ? GREEN : P);
       return { id: t.id, name: t.name, style: `font-size:9.5px;line-height:1.2;padding:1px 4px;border-radius:3px;background:${c}18;color:${c};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer` };

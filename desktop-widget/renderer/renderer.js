@@ -226,10 +226,11 @@ function renderWeek(tasks) {
   els.weekItems.innerHTML = DOW.map((dw, i) => {
     const dt = addDays(wkStart, i), key = iso(dt), isToday = key === iso(today);
     // 지속 업무는 끝이 없는 진행형 업무라 주간 일정에는 표시하지 않는다
-    // (월간 일정에서는 계속 보임) — js/viewmodel.js의 weekDays와 동일.
+    // (월간 일정에서는 계속 보임). 완료된 업무는 시작일에 고정 — js/viewmodel.js의
+    // weekDays와 동일.
     const dayTasks = tasks.filter((t) => {
       if (isOngoing(t)) return false;
-      if (isComplete(t)) return (t.completedDate || t.updated) === key;
+      if (isComplete(t)) return t.start === key;
       return t.start === t.due ? t.due === key
         : (durationDays(t) < LONG_DURATION_DAYS && t.start <= key && t.due >= key);
     });
@@ -252,8 +253,12 @@ function renderMonth(tasks) {
   const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
   els.monthLabel.textContent = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
 
-  const byDue = {};
-  tasks.forEach((t) => { if (t.due) (byDue[t.due] = byDue[t.due] || []).push(t); });
+  // 완료된(체크된) 업무는 시작일에, 나머지는 마감일에 걸어서 표시한다.
+  const byAnchorDate = {};
+  tasks.forEach((t) => {
+    const key = isComplete(t) ? t.start : t.due;
+    if (key) (byAnchorDate[key] = byAnchorDate[key] || []).push(t);
+  });
 
   // 42-cell grid (6 weeks) starting from the Sunday on/before the 1st,
   // matching the 일~토 header order used across the whole app.
@@ -269,7 +274,7 @@ function renderMonth(tasks) {
     const inMonth = dt.getMonth() === base.getMonth();
     const isToday = key === iso(today);
     const weekend = (i % 7) === 0 || (i % 7) === 6;
-    const dayTasks = byDue[key] || [];
+    const dayTasks = byAnchorDate[key] || [];
     // Same layout as the website's month cells: a couple of truncated
     // task-name chips, plus a "+n" indicator for anything that doesn't fit.
     const shown = dayTasks.slice(0, 2);
