@@ -113,12 +113,16 @@
     padding: 8px 10px 3px;
     -webkit-app-region: no-drag;
   }
+  /* #month 전체는 no-drag(달력 칸 클릭이 창 이동으로 오인되지 않도록)라서, 이
+     줄만 다시 drag로 되돌려야 마우스로 위젯을 옮길 수 있다 — 버튼들은 각자
+     .no-drag가 있어서 클릭은 그대로 잘 된다. */
   #month-head {
     display: flex; align-items: flex-end;
     position: relative;
     gap: 8px;
     padding: 2px 2px 8px;
     flex: none;
+    -webkit-app-region: drag;
   }
   /* head-btns가 여기로 옮겨오면(renderer.js) 맨 오른쪽으로 밀어낸다 — 이동 아이콘
      (‹●›)과 라벨은 왼쪽에 붙어서 표시된다. */
@@ -178,12 +182,16 @@
     -webkit-app-region: no-drag;
     overflow: hidden;
   }
+  /* #week 전체는 no-drag(달력 칸 클릭이 창 이동으로 오인되지 않도록)라서, 이
+     줄만 다시 drag로 되돌려야 마우스로 위젯을 옮길 수 있다 — 버튼들은 각자
+     .no-drag가 있어서 클릭은 그대로 잘 된다. */
   #week-head-row {
     display: flex; align-items: flex-end;
     position: relative;
     gap: 8px;
     padding: 2px 2px 8px;
     flex: none;
+    -webkit-app-region: drag;
   }
   /* head-btns가 여기로 옮겨오면(renderer.js) 맨 오른쪽으로 밀어낸다. */
   #week-head-row #head-btns { margin-left: auto; }
