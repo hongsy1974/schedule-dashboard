@@ -52,11 +52,11 @@ App.computeViewModel = function (state) {
   const DOW = ['일', '월', '화', '수', '목', '금', '토'];
   const wkStart = addDays(today, -today.getDay() + S.weekOffset * 7);
   const wkEnd = addDays(wkStart, 6);
-  // 완료된(체크된) 업무는 시작일에, 나머지는 마감일에 걸어서 월간 달력에 표시한다.
+  // 시작일과 마감일이 다른 업무도 마감일이 아니라 시작일에 걸어서 월간 달력에
+  // 표시한다 (완료 여부와 무관).
   const byAnchorDate = {};
   S.tasks.forEach(t => {
-    const key = statusOf(today, t) === '완료' ? t.start : t.due;
-    (byAnchorDate[key] = byAnchorDate[key] || []).push(t);
+    (byAnchorDate[t.start] = byAnchorDate[t.start] || []).push(t);
   });
 
   const mdLabel = (dt) => `${dt.getMonth() + 1}.${dt.getDate()}`;

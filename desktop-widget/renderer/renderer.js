@@ -226,11 +226,11 @@ function renderMonth(tasks) {
   const base = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
   els.monthLabel.textContent = `${base.getFullYear()}년 ${base.getMonth() + 1}월`;
 
-  // 완료된(체크된) 업무는 시작일에, 나머지는 마감일에 걸어서 표시한다.
+  // 시작일과 마감일이 다른 업무도 마감일이 아니라 시작일에 걸어서 표시한다
+  // (완료 여부와 무관) — js/viewmodel.js와 동일.
   const byAnchorDate = {};
   tasks.forEach((t) => {
-    const key = isComplete(t) ? t.start : t.due;
-    if (key) (byAnchorDate[key] = byAnchorDate[key] || []).push(t);
+    if (t.start) (byAnchorDate[t.start] = byAnchorDate[t.start] || []).push(t);
   });
 
   // 42-cell grid (6 weeks) starting from the Sunday on/before the 1st,
